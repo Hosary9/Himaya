@@ -1,0 +1,387 @@
+import React, { useState, useEffect } from "react";
+import { Star, MapPin, Clock, ShieldCheck, Filter, ChevronDown, Video, Phone, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { cn } from "../lib/utils";
+import { useLanguage } from "../lib/i18n";
+
+const MOCK_LAWYERS = [
+  {
+    id: 1,
+    name: "أ. محمود سعيد",
+    nameEn: "Mr. Mahmoud Saeed",
+    specialty: "family",
+    specialtyLabel: "قضايا الأسرة والأحوال الشخصية",
+    specialtyLabelEn: "Family Law & Personal Status",
+    location: "القاهرة، المعادي",
+    locationEn: "Cairo, Maadi",
+    governorate: "cairo",
+    rating: 4.9,
+    reviews: 124,
+    experience: "15 سنة",
+    experienceEn: "15 years",
+    availability: "now",
+    matchScore: 98,
+    price: 300,
+    image: "https://i.pravatar.cc/150?img=11"
+  },
+  {
+    id: 2,
+    name: "أ. سارة عبد الرحمن",
+    nameEn: "Ms. Sarah Abdel Rahman",
+    specialty: "commercial",
+    specialtyLabel: "القانون التجاري والشركات",
+    specialtyLabelEn: "Commercial & Corporate Law",
+    location: "الجيزة، الدقي",
+    locationEn: "Giza, Dokki",
+    governorate: "giza",
+    rating: 4.8,
+    reviews: 89,
+    experience: "10 سنوات",
+    experienceEn: "10 years",
+    availability: "soon",
+    matchScore: 85,
+    price: 500,
+    image: "https://i.pravatar.cc/150?img=5"
+  },
+  {
+    id: 3,
+    name: "أ. طارق حسن",
+    nameEn: "Mr. Tarek Hassan",
+    specialty: "criminal",
+    specialtyLabel: "القانون الجنائي",
+    specialtyLabelEn: "Criminal Law",
+    location: "الإسكندرية، سموحة",
+    locationEn: "Alexandria, Smouha",
+    governorate: "alexandria",
+    rating: 4.7,
+    reviews: 210,
+    experience: "20 سنة",
+    experienceEn: "20 years",
+    availability: "appointment",
+    matchScore: 75,
+    price: 700,
+    image: "https://i.pravatar.cc/150?img=12"
+  },
+  {
+    id: 4,
+    name: "أ. منى زكي",
+    nameEn: "Ms. Mona Zaki",
+    specialty: "labor",
+    specialtyLabel: "قضايا عمالية",
+    specialtyLabelEn: "Labor Cases",
+    location: "القاهرة، مدينة نصر",
+    locationEn: "Cairo, Nasr City",
+    governorate: "cairo",
+    rating: 4.9,
+    reviews: 156,
+    experience: "12 سنة",
+    experienceEn: "12 years",
+    availability: "now",
+    matchScore: 95,
+    price: 400,
+    image: "https://i.pravatar.cc/150?img=9"
+  },
+  {
+    id: 5,
+    name: "أ. كريم أحمد",
+    nameEn: "Mr. Karim Ahmed",
+    specialty: "labor",
+    specialtyLabel: "قضايا عمالية وتأمينات",
+    specialtyLabelEn: "Labor & Insurance",
+    location: "الجيزة، المهندسين",
+    locationEn: "Giza, Mohandeseen",
+    governorate: "giza",
+    rating: 4.6,
+    reviews: 78,
+    experience: "8 سنوات",
+    experienceEn: "8 years",
+    availability: "soon",
+    matchScore: 88,
+    price: 250,
+    image: "https://i.pravatar.cc/150?img=14"
+  }
+];
+
+const GOVERNORATES = [
+  { id: 'all', label: 'كل المحافظات', labelEn: 'All Governorates' },
+  { id: 'cairo', label: 'القاهرة', labelEn: 'Cairo' },
+  { id: 'giza', label: 'الجيزة', labelEn: 'Giza' },
+  { id: 'alexandria', label: 'الإسكندرية', labelEn: 'Alexandria' },
+];
+
+export default function LawyerSearch() {
+  const { t, language } = useLanguage();
+  const location = useLocation();
+  const state = location.state as { specialty?: string, caseType?: string, isUrgent?: boolean, description?: string } | null;
+
+  const [activeSpecialty, setActiveSpecialty] = useState(state?.specialty || 'all');
+  const [activeGovernorate, setActiveGovernorate] = useState('all');
+  const [activeAvailability, setActiveAvailability] = useState(state ? 'soonest' : 'all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('match'); // match, rating, price_asc, price_desc
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    if (state?.specialty) {
+      setActiveSpecialty(state.specialty);
+    }
+    if (state) {
+      setActiveAvailability('soonest');
+      setSortBy('match');
+    }
+  }, [state]);
+
+  let filteredLawyers = MOCK_LAWYERS.filter(lawyer => {
+    if (activeSpecialty !== 'all' && lawyer.specialty !== activeSpecialty) return false;
+    if (activeGovernorate !== 'all' && lawyer.governorate !== activeGovernorate) return false;
+    if (activeAvailability === 'soonest' && lawyer.availability === 'appointment') return false; // Hide appointment only if soonest is selected
+    if (activeAvailability === 'now' && lawyer.availability !== 'now') return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return lawyer.name.toLowerCase().includes(query) || 
+             lawyer.nameEn.toLowerCase().includes(query) ||
+             lawyer.specialtyLabel.toLowerCase().includes(query) ||
+             lawyer.specialtyLabelEn.toLowerCase().includes(query) ||
+             lawyer.location.toLowerCase().includes(query) ||
+             lawyer.locationEn.toLowerCase().includes(query);
+    }
+    return true;
+  });
+
+  // Sort logic
+  filteredLawyers.sort((a, b) => {
+    if (sortBy === 'match') {
+      // Always prioritize 'now' availability if activeAvailability is 'soonest' or it's urgent
+      if (activeAvailability === 'soonest' || state?.isUrgent) {
+        if (a.availability === 'now' && b.availability !== 'now') return -1;
+        if (b.availability === 'now' && a.availability !== 'now') return 1;
+      }
+      return b.matchScore - a.matchScore;
+    }
+    if (sortBy === 'rating') return b.rating - a.rating;
+    if (sortBy === 'price_asc') return a.price - b.price;
+    if (sortBy === 'price_desc') return b.price - a.price;
+    return 0;
+  });
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      
+      {/* Banners from Simulator */}
+      {state?.isUrgent && (
+        <div className="bg-emergency/10 border border-emergency/20 rounded-xl p-4 flex items-start gap-3 animate-pulse">
+          <AlertTriangle size={24} className="text-emergency shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-emergency mb-1">
+              {language === 'ar' ? 'قضيتك تحتاج إجراء عاجل — محامي الطوارئ متاح الآن' : 'Your case requires urgent action — Emergency lawyer available now'}
+            </h3>
+            <p className="text-xs text-emergency/80">
+              {language === 'ar' ? 'تم ترتيب النتائج لإظهار المحامين المتاحين فوراً في الأعلى.' : 'Results are sorted to show immediately available lawyers at the top.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {state?.caseType && !state?.isUrgent && (
+        <div className="bg-success/10 border border-success/20 rounded-xl p-4 flex items-start gap-3">
+          <CheckCircle2 size={24} className="text-success shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-success mb-1">
+              {language === 'ar' ? `بنعرضلك محامين متخصصين في ${state.caseType} بناءً على تحليل قضيتك` : `Showing lawyers specialized in ${state.caseType} based on your case analysis`}
+            </h3>
+            <p className="text-xs text-success/80">
+              {language === 'ar' ? 'تم تصفية النتائج لتناسب نوع قضيتك بدقة.' : 'Results have been filtered to match your case type accurately.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-text">{language === 'ar' ? 'ابحث عن محامي' : 'Find a Lawyer'}</h2>
+        <button 
+          onClick={() => setShowFilters(!showFilters)}
+          className={cn(
+            "p-2 rounded-xl border transition-colors",
+            showFilters ? "bg-primary text-surface border-primary" : "bg-surface border-gray-200 text-muted hover:bg-gray-50"
+          )}
+        >
+          <Filter size={20} />
+        </button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={language === 'ar' ? "ابحث بالاسم، التخصص، أو المحافظة..." : "Search by name, specialty, or governorate..."}
+          className={cn(
+            "w-full bg-surface border border-gray-200 rounded-2xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all",
+            language === 'ar' ? "pr-11" : "pl-11"
+          )}
+        />
+        <SearchIcon className={cn("absolute top-1/2 -translate-y-1/2 text-muted", language === 'ar' ? "right-4" : "left-4")} size={20} />
+      </div>
+
+      {/* Advanced Filters (Expandable) */}
+      {showFilters && (
+        <div className="bg-surface rounded-2xl p-4 border border-gray-100 shadow-sm space-y-4 animate-in slide-in-from-top-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-muted mb-2">{language === 'ar' ? 'المحافظة' : 'Governorate'}</label>
+              <select 
+                value={activeGovernorate}
+                onChange={(e) => setActiveGovernorate(e.target.value)}
+                className="w-full bg-background border border-gray-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                {GOVERNORATES.map(gov => (
+                  <option key={gov.id} value={gov.id}>{language === 'ar' ? gov.label : gov.labelEn}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-muted mb-2">{language === 'ar' ? 'ترتيب حسب' : 'Sort by'}</label>
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full bg-background border border-gray-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="match">{language === 'ar' ? 'الأفضل تطابقاً' : 'Best Match'}</option>
+                <option value="rating">{language === 'ar' ? 'الأعلى تقييماً' : 'Highest Rating'}</option>
+                <option value="price_asc">{language === 'ar' ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
+                <option value="price_desc">{language === 'ar' ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-muted mb-2">{language === 'ar' ? 'التوفر' : 'Availability'}</label>
+              <div className="flex flex-wrap gap-2">
+                <FilterChip label={language === 'ar' ? "الكل" : "All"} active={activeAvailability === 'all'} onClick={() => setActiveAvailability('all')} />
+                <FilterChip label={language === 'ar' ? "متاح الآن" : "Available Now"} active={activeAvailability === 'now'} onClick={() => setActiveAvailability('now')} />
+                <FilterChip label={language === 'ar' ? "أقرب وقت" : "Soonest"} active={activeAvailability === 'soonest'} onClick={() => setActiveAvailability('soonest')} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Filters */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <FilterChip label={language === 'ar' ? "الكل" : "All"} active={activeSpecialty === 'all'} onClick={() => setActiveSpecialty('all')} />
+        <FilterChip label={language === 'ar' ? "أسرة" : "Family"} active={activeSpecialty === 'family'} onClick={() => setActiveSpecialty('family')} />
+        <FilterChip label={language === 'ar' ? "جنائي" : "Criminal"} active={activeSpecialty === 'criminal'} onClick={() => setActiveSpecialty('criminal')} />
+        <FilterChip label={language === 'ar' ? "عمالي" : "Labor"} active={activeSpecialty === 'labor'} onClick={() => setActiveSpecialty('labor')} />
+        <FilterChip label={language === 'ar' ? "شركات" : "Commercial"} active={activeSpecialty === 'commercial'} onClick={() => setActiveSpecialty('commercial')} />
+      </div>
+
+      {/* Lawyer List */}
+      <div className="space-y-4">
+        {filteredLawyers.length > 0 ? (
+          filteredLawyers.map(lawyer => (
+            <LawyerCard key={lawyer.id} lawyer={lawyer} language={language} />
+          ))
+        ) : (
+          <div className="text-center py-12 bg-surface rounded-2xl border border-gray-100 border-dashed">
+            <ShieldCheck size={48} className="text-gray-300 mx-auto mb-4" />
+            <h3 className="font-bold text-lg mb-2">{language === 'ar' ? 'مفيش محامين متاحين دلوقتي' : 'No lawyers available right now'}</h3>
+            <p className="text-muted text-sm max-w-xs mx-auto">
+              {language === 'ar' ? 'في المحافظة المحددة لهذا التخصص. جرب تغيير المحافظة أو البحث في تخصص آخر.' : 'In the selected governorate for this specialty. Try changing the governorate or searching in another specialty.'}
+            </p>
+            <button 
+              onClick={() => { setActiveGovernorate('all'); setActiveSpecialty('all'); setActiveAvailability('all'); }}
+              className="mt-4 text-primary font-semibold text-sm hover:underline"
+            >
+              {language === 'ar' ? 'عرض كل المحامين المتاحين أونلاين' : 'Show all lawyers available online'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SearchIcon(props: any) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+  );
+}
+
+function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors border",
+        active
+          ? "bg-primary text-surface border-primary"
+          : "bg-surface text-muted border-gray-200 hover:bg-gray-50"
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function LawyerCard({ lawyer, language }: { lawyer: typeof MOCK_LAWYERS[0]; language: string; key?: React.Key }) {
+  return (
+    <div className="bg-surface rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex gap-4">
+        {/* Avatar & Availability */}
+        <div className="relative shrink-0">
+          <img src={lawyer.image} alt={lawyer.name} className="w-20 h-20 rounded-xl object-cover" />
+          <div className={cn(
+            "absolute -bottom-1 w-4 h-4 rounded-full border-2 border-surface",
+            language === 'ar' ? "-right-1" : "-left-1",
+            lawyer.availability === 'now' ? "bg-success" :
+            lawyer.availability === 'soon' ? "bg-warning" : "bg-gray-400"
+          )} />
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="font-bold text-text truncate flex items-center gap-1">
+                {language === 'ar' ? lawyer.name : lawyer.nameEn}
+                <ShieldCheck size={16} className="text-primary shrink-0" />
+              </h3>
+              <p className="text-xs text-primary font-medium mt-0.5">{language === 'ar' ? lawyer.specialtyLabel : lawyer.specialtyLabelEn}</p>
+            </div>
+            <div className="bg-accent/10 text-accent text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 shrink-0">
+              {lawyer.matchScore}% {language === 'ar' ? 'تطابق' : 'Match'}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 mt-2 text-xs text-muted">
+            <div className="flex items-center gap-1">
+              <Star size={14} className="text-accent fill-accent" />
+              <span className="font-medium text-text">{lawyer.rating}</span>
+              <span>({lawyer.reviews})</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <MapPin size={14} />
+              <span className="truncate">{language === 'ar' ? lawyer.location : lawyer.locationEn}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-50">
+            <div className="text-sm font-bold text-text">
+              {lawyer.price} {language === 'ar' ? 'ج.م' : 'EGP'} <span className="text-xs font-normal text-muted">/ 30 {language === 'ar' ? 'دقيقة' : 'min'}</span>
+            </div>
+            <div className={cn("flex gap-2", language === 'ar' ? "mr-auto" : "ml-auto")}>
+              <button className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-surface transition-colors">
+                <Phone size={16} />
+              </button>
+              <button className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-surface transition-colors">
+                <Video size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
