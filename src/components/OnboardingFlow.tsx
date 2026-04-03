@@ -21,8 +21,8 @@ export default function OnboardingFlow() {
     return (
       <div className="min-h-screen bg-primary flex flex-col items-center justify-center animate-in fade-in duration-1000">
         <Shield size={80} className="text-accent mb-6" />
-        <h1 className="text-4xl font-bold text-surface mb-2 tracking-wide">حماية</h1>
-        <p className="text-accent text-lg tracking-widest">HIMAYA</p>
+        <h1 className="text-4xl font-bold text-surface mb-2 tracking-wide">محامينا</h1>
+        <p className="text-accent text-lg tracking-widest uppercase">MOHAMINA</p>
       </div>
     );
   }

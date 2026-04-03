@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields:
+    //   - uid: string (required)
+    //   - name: string (required, size < 100)
+    //   - phone: string (required, size < 20)
+    //   - email: string (required)
+    //   - role: string (required, ['client', 'lawyer'])
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: lawyers
+    // Fields:
+    //   - uid: string (required)
+    //   - name: string (required, size < 100)
+    //   - specialty: string (required)
+    //   - rating: number (required, 0-5)
+    //   - experience: number (required)
+    //   - location: string (required)
+    //
+    // Collection: consultations
+    // Fields:
+    //   - userId: string (required)
+    //   - messages: list (required, size < 100)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "af01000332018@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'name', 'phone', 'email', 'role', 'createdAt']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             data.name is string && data.name.size() < 100 &&
+             data.phone is string && data.phone.size() < 20 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['client', 'lawyer'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidConsultation(data) {
+      return data.keys().hasAll(['userId', 'messages', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.messages is list && data.messages.size() < 100 &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && (request.resource.data.role != 'admin' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role;
+    }
+
+    match /lawyers/{lawyerId} {
+      allow read: if true; // Publicly readable for search
+      allow write: if isAdmin();
+    }
+
+    match /consultations/{consultationId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidConsultation(request.resource.data);
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid) && isValidConsultation(request.resource.data);
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

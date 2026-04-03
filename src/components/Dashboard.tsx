@@ -31,7 +31,7 @@ export default function Dashboard() {
           </div>
           <div>
             <h3 className="font-semibold text-accent mb-1 text-sm flex items-center gap-2">
-              {language === 'ar' ? 'نصيحة حماية اليوم' : 'Himaya Daily Tip'}
+              {language === 'ar' ? 'نصيحة محامينا اليوم' : 'Mohamina Daily Tip'}
             </h3>
             <p className="text-sm leading-relaxed opacity-95">
               {language === 'ar' 
@@ -101,10 +101,10 @@ export default function Dashboard() {
       <section>
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-bold text-lg">{language === 'ar' ? 'قضاياك الحالية' : 'Current Cases'}</h3>
-          <button className="text-primary text-sm font-medium flex items-center">
+          <Link to="/app/cases" className="text-primary text-sm font-medium flex items-center hover:underline">
             {language === 'ar' ? 'عرض الكل' : 'View All'}
             <ChevronLeft size={16} className={language === 'en' ? 'rotate-180' : ''} />
-          </button>
+          </Link>
         </div>
         <div className="bg-surface rounded-2xl p-5 border border-gray-100 shadow-sm">
           <div className="flex justify-between items-start mb-4">

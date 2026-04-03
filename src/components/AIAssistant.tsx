@@ -1,9 +1,62 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, ShieldAlert, Paperclip, MessageSquare, Phone, MessageCircle, PhoneCall, CheckCircle2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { useLanguage } from "../lib/i18n";
 import { himayaBot } from "../lib/himayaBot";
+import { db, auth } from "../firebase";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, arrayUnion } from "firebase/firestore";
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 type Message = {
   id: number;
@@ -17,18 +70,50 @@ type Message = {
 export default function AIAssistant() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
 
+  const [consultationId, setConsultationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       role: 'assistant',
-      content: language === 'ar' ? 'أهلاً بك في حماية. أنا مساعد، المساعد القانوني الذكي. كيف يمكنني مساعدتك اليوم؟' : 'Welcome to Himaya. I am Mosaad, your smart legal assistant. How can I help you today?',
+      content: language === 'ar' ? 'أهلاً بك في محامينا. أنا مساعد، المساعد القانوني الذكي. كيف يمكنني مساعدتك اليوم؟' : 'Welcome to Mohamina. I am Mosaad, your smart legal assistant. How can I help you today?',
       timestamp: new Date().toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
     }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize consultation in Firestore
+  useEffect(() => {
+    const initConsultation = async () => {
+      if (!auth.currentUser) return;
+      try {
+        const docRef = await addDoc(collection(db, 'consultations'), {
+          userId: auth.currentUser.uid,
+          createdAt: serverTimestamp(),
+          messages: messages.map(m => ({
+            role: m.role,
+            content: m.content,
+            timestamp: m.timestamp
+          }))
+        });
+        setConsultationId(docRef.id);
+      } catch (error) {
+        console.error("Error initializing consultation:", error);
+      }
+    };
+    initConsultation();
+  }, []);
+
+  useEffect(() => {
+    if (location.state?.initialMessage) {
+      setInput(location.state.initialMessage);
+      // Clear state to prevent re-filling on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,7 +123,7 @@ export default function AIAssistant() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
     
     const newUserMsg: Message = {
@@ -51,19 +136,50 @@ export default function AIAssistant() {
     setMessages(prev => [...prev, newUserMsg]);
     setInput('');
     setIsTyping(true);
+
+    // Save user message to Firestore
+    if (consultationId) {
+      try {
+        await updateDoc(doc(db, 'consultations', consultationId), {
+          messages: arrayUnion({
+            role: newUserMsg.role,
+            content: newUserMsg.content,
+            timestamp: newUserMsg.timestamp
+          })
+        });
+      } catch (error) {
+        handleFirestoreError(error, OperationType.UPDATE, `consultations/${consultationId}`);
+      }
+    }
     
-    setTimeout(() => {
+    setTimeout(async () => {
       const response = himayaBot(newUserMsg.content);
-      
-      setMessages(prev => [...prev, {
+      const assistantMsg: Message = {
         id: Date.now() + 1,
         role: 'assistant',
         content: response.text,
         action: response.action as any,
         specialty: response.specialty,
         timestamp: new Date().toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
-      }]);
+      };
+      
+      setMessages(prev => [...prev, assistantMsg]);
       setIsTyping(false);
+
+      // Save assistant response to Firestore
+      if (consultationId) {
+        try {
+          await updateDoc(doc(db, 'consultations', consultationId), {
+            messages: arrayUnion({
+              role: assistantMsg.role,
+              content: assistantMsg.content,
+              timestamp: assistantMsg.timestamp
+            })
+          });
+        } catch (error) {
+          handleFirestoreError(error, OperationType.UPDATE, `consultations/${consultationId}`);
+        }
+      }
     }, 1000);
   };
 
@@ -89,7 +205,7 @@ export default function AIAssistant() {
         </div>
         <div>
           <h2 className="text-xl font-bold text-text">{language === 'ar' ? 'مساعد' : 'Mosaad'}</h2>
-          <p className="text-xs text-muted">{language === 'ar' ? 'المساعد القانوني الذكي من حماية' : 'Smart Legal Assistant from Himaya'}</p>
+          <p className="text-xs text-muted">{language === 'ar' ? 'المساعد القانوني الذكي من محامينا' : 'Smart Legal Assistant from Mohamina'}</p>
         </div>
       </div>
 

@@ -3,6 +3,59 @@ import { Star, MapPin, Clock, ShieldCheck, Filter, ChevronDown, Video, Phone, Al
 import { useLocation } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { useLanguage } from "../lib/i18n";
+import { db, auth } from "../firebase";
+import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 const MOCK_LAWYERS = [
   {
@@ -21,8 +74,10 @@ const MOCK_LAWYERS = [
     experienceEn: "15 years",
     availability: "now",
     matchScore: 98,
-    price: 300,
-    image: "https://i.pravatar.cc/150?img=11"
+    consultationPrice: 150,
+    casePriceRange: "5,000 - 50,000",
+    image: "https://picsum.photos/seed/lawyer-m1/150/150",
+    isExpatSpecialist: false
   },
   {
     id: 2,
@@ -40,8 +95,10 @@ const MOCK_LAWYERS = [
     experienceEn: "10 years",
     availability: "soon",
     matchScore: 85,
-    price: 500,
-    image: "https://i.pravatar.cc/150?img=5"
+    consultationPrice: 200,
+    casePriceRange: "10,000 - 200,000",
+    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712127999.png",
+    isExpatSpecialist: true
   },
   {
     id: 3,
@@ -59,8 +116,10 @@ const MOCK_LAWYERS = [
     experienceEn: "20 years",
     availability: "appointment",
     matchScore: 75,
-    price: 700,
-    image: "https://i.pravatar.cc/150?img=12"
+    consultationPrice: 250,
+    casePriceRange: "20,000 - 300,000",
+    image: "https://picsum.photos/seed/lawyer-m2/150/150",
+    isExpatSpecialist: false
   },
   {
     id: 4,
@@ -78,16 +137,18 @@ const MOCK_LAWYERS = [
     experienceEn: "12 years",
     availability: "now",
     matchScore: 95,
-    price: 400,
-    image: "https://i.pravatar.cc/150?img=9"
+    consultationPrice: 100,
+    casePriceRange: "3,000 - 30,000",
+    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128000.png",
+    isExpatSpecialist: false
   },
   {
     id: 5,
     name: "أ. كريم أحمد",
     nameEn: "Mr. Karim Ahmed",
-    specialty: "labor",
-    specialtyLabel: "قضايا عمالية وتأمينات",
-    specialtyLabelEn: "Labor & Insurance",
+    specialty: "civil",
+    specialtyLabel: "القانون المدني والتعويضات",
+    specialtyLabelEn: "Civil Law & Compensation",
     location: "الجيزة، المهندسين",
     locationEn: "Giza, Mohandeseen",
     governorate: "giza",
@@ -97,8 +158,178 @@ const MOCK_LAWYERS = [
     experienceEn: "8 years",
     availability: "soon",
     matchScore: 88,
-    price: 250,
-    image: "https://i.pravatar.cc/150?img=14"
+    consultationPrice: 120,
+    casePriceRange: "5,000 - 100,000",
+    image: "https://picsum.photos/seed/lawyer-m3/150/150",
+    isExpatSpecialist: true
+  },
+  {
+    id: 6,
+    name: "أ. هبة الله علي",
+    nameEn: "Ms. Hebatullah Ali",
+    specialty: "civil",
+    specialtyLabel: "مدني وعقارات",
+    specialtyLabelEn: "Civil & Real Estate",
+    location: "القاهرة، التجمع الخامس",
+    locationEn: "Cairo, New Cairo",
+    governorate: "cairo",
+    rating: 4.9,
+    reviews: 45,
+    experience: "7 سنوات",
+    experienceEn: "7 years",
+    availability: "now",
+    matchScore: 92,
+    consultationPrice: 180,
+    casePriceRange: "10,000 - 150,000",
+    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128001.png",
+    isExpatSpecialist: true
+  },
+  {
+    id: 7,
+    name: "أ. يوسف منصور",
+    nameEn: "Mr. Youssef Mansour",
+    specialty: "criminal",
+    specialtyLabel: "جنايات ونقض",
+    specialtyLabelEn: "Criminal & Cassation",
+    location: "المنصورة، المشاية",
+    locationEn: "Mansoura, Mashaya",
+    governorate: "dakahlia",
+    rating: 4.8,
+    reviews: 112,
+    experience: "18 سنة",
+    experienceEn: "18 years",
+    availability: "appointment",
+    matchScore: 80,
+    consultationPrice: 220,
+    casePriceRange: "25,000 - 300,000",
+    image: "https://picsum.photos/seed/lawyer-m4/150/150",
+    isExpatSpecialist: false
+  },
+  {
+    id: 8,
+    name: "أ. فاطمة الزهراء",
+    nameEn: "Ms. Fatma Al-Zahraa",
+    specialty: "family",
+    specialtyLabel: "أحوال شخصية وميراث",
+    specialtyLabelEn: "Personal Status & Inheritance",
+    location: "طنطا، البحر",
+    locationEn: "Tanta, El Bahr",
+    governorate: "gharbia",
+    rating: 4.7,
+    reviews: 67,
+    experience: "11 سنة",
+    experienceEn: "11 years",
+    availability: "now",
+    matchScore: 89,
+    consultationPrice: 130,
+    casePriceRange: "4,000 - 60,000",
+    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128002.png",
+    isExpatSpecialist: true
+  },
+  {
+    id: 9,
+    name: "أ. مصطفى كامل",
+    nameEn: "Mr. Mostafa Kamel",
+    specialty: "civil",
+    specialtyLabel: "قضايا مدنية وتعويضات",
+    specialtyLabelEn: "Civil & Compensation",
+    location: "أسيوط، شارع النميس",
+    locationEn: "Assiut, El Nemees St",
+    governorate: "assiut",
+    rating: 4.5,
+    reviews: 54,
+    experience: "14 سنة",
+    experienceEn: "14 years",
+    availability: "soon",
+    matchScore: 82,
+    consultationPrice: 110,
+    casePriceRange: "6,000 - 80,000",
+    image: "https://picsum.photos/seed/lawyer-m5/150/150",
+    isExpatSpecialist: true
+  },
+  {
+    id: 10,
+    name: "أ. زينب الشاذلي",
+    nameEn: "Ms. Zeinab El Shazly",
+    specialty: "family",
+    specialtyLabel: "قضايا الأسرة",
+    specialtyLabelEn: "Family Cases",
+    location: "بورسعيد، حي الشرق",
+    locationEn: "Port Said, El Shark",
+    governorate: "portsaid",
+    rating: 4.8,
+    reviews: 32,
+    experience: "6 سنوات",
+    experienceEn: "6 years",
+    availability: "now",
+    matchScore: 87,
+    consultationPrice: 90,
+    casePriceRange: "3,000 - 40,000",
+    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128001.png",
+    isExpatSpecialist: false
+  },
+  {
+    id: 11,
+    name: "أ. هشام الجيار",
+    nameEn: "Mr. Hesham El Gayar",
+    specialty: "commercial",
+    specialtyLabel: "تأسيس شركات وعلامات تجارية",
+    specialtyLabelEn: "Company Formation & Trademarks",
+    location: "القاهرة، الزمالك",
+    locationEn: "Cairo, Zamalek",
+    governorate: "cairo",
+    rating: 4.9,
+    reviews: 188,
+    experience: "22 سنة",
+    experienceEn: "22 years",
+    availability: "appointment",
+    matchScore: 94,
+    consultationPrice: 300,
+    casePriceRange: "30,000 - 500,000",
+    image: "https://picsum.photos/seed/lawyer-m6/150/150",
+    isExpatSpecialist: true
+  },
+  {
+    id: 12,
+    name: "أ. رقية محمود",
+    nameEn: "Ms. Roqaya Mahmoud",
+    specialty: "criminal",
+    specialtyLabel: "جنايات وجنح",
+    specialtyLabelEn: "Criminal Cases",
+    location: "سوهاج، شارع المحطة",
+    locationEn: "Sohag, El Mahatta St",
+    governorate: "sohag",
+    rating: 4.6,
+    reviews: 41,
+    experience: "9 سنوات",
+    experienceEn: "9 years",
+    availability: "now",
+    matchScore: 84,
+    consultationPrice: 140,
+    casePriceRange: "10,000 - 120,000",
+    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128000.png",
+    isExpatSpecialist: false
+  },
+  {
+    id: 13,
+    name: "أ. مرتضى منصور",
+    nameEn: "Mr. Mortada Mansour",
+    specialty: "criminal",
+    specialtyLabel: "جنايات ونقض وقضايا كبرى",
+    specialtyLabelEn: "Criminal, Cassation & Major Cases",
+    location: "القاهرة، العجوزة",
+    locationEn: "Cairo, Agouza",
+    governorate: "cairo",
+    rating: 5.0,
+    reviews: 1500,
+    experience: "40 سنة",
+    experienceEn: "40 years",
+    availability: "appointment",
+    matchScore: 99,
+    consultationPrice: 50000,
+    casePriceRange: "500,000 - 3,000,000",
+    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128363.png",
+    isExpatSpecialist: true
   }
 ];
 
@@ -114,12 +345,34 @@ export default function LawyerSearch() {
   const location = useLocation();
   const state = location.state as { specialty?: string, caseType?: string, isUrgent?: boolean, description?: string } | null;
 
+  const [lawyers, setLawyers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeSpecialty, setActiveSpecialty] = useState(state?.specialty || 'all');
   const [activeGovernorate, setActiveGovernorate] = useState('all');
   const [activeAvailability, setActiveAvailability] = useState(state ? 'soonest' : 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('match'); // match, rating, price_asc, price_desc
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const lawyersPath = 'lawyers';
+    const unsubscribe = onSnapshot(collection(db, lawyersPath), (snapshot) => {
+      if (snapshot.empty) {
+        // If no lawyers in DB, we could seed them or just show empty
+        // For now, let's use MOCK_LAWYERS as fallback if DB is empty
+        setLawyers(MOCK_LAWYERS);
+      } else {
+        const lawyersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setLawyers(lawyersData);
+      }
+      setLoading(false);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, lawyersPath);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (state?.specialty) {
@@ -131,19 +384,22 @@ export default function LawyerSearch() {
     }
   }, [state]);
 
-  let filteredLawyers = MOCK_LAWYERS.filter(lawyer => {
-    if (activeSpecialty !== 'all' && lawyer.specialty !== activeSpecialty) return false;
+  let filteredLawyers = lawyers.filter(lawyer => {
+    if (activeSpecialty !== 'all') {
+      if (activeSpecialty === 'expat' && !lawyer.isExpatSpecialist) return false;
+      if (activeSpecialty !== 'expat' && lawyer.specialty !== activeSpecialty) return false;
+    }
     if (activeGovernorate !== 'all' && lawyer.governorate !== activeGovernorate) return false;
     if (activeAvailability === 'soonest' && lawyer.availability === 'appointment') return false; // Hide appointment only if soonest is selected
     if (activeAvailability === 'now' && lawyer.availability !== 'now') return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return lawyer.name.toLowerCase().includes(query) || 
-             lawyer.nameEn.toLowerCase().includes(query) ||
-             lawyer.specialtyLabel.toLowerCase().includes(query) ||
-             lawyer.specialtyLabelEn.toLowerCase().includes(query) ||
-             lawyer.location.toLowerCase().includes(query) ||
-             lawyer.locationEn.toLowerCase().includes(query);
+      return (lawyer.name?.toLowerCase().includes(query) || 
+              lawyer.nameEn?.toLowerCase().includes(query) ||
+              lawyer.specialtyLabel?.toLowerCase().includes(query) ||
+              lawyer.specialtyLabelEn?.toLowerCase().includes(query) ||
+              lawyer.location?.toLowerCase().includes(query) ||
+              lawyer.locationEn?.toLowerCase().includes(query));
     }
     return true;
   });
@@ -159,8 +415,8 @@ export default function LawyerSearch() {
       return b.matchScore - a.matchScore;
     }
     if (sortBy === 'rating') return b.rating - a.rating;
-    if (sortBy === 'price_asc') return a.price - b.price;
-    if (sortBy === 'price_desc') return b.price - a.price;
+    if (sortBy === 'price_asc') return a.consultationPrice - b.consultationPrice;
+    if (sortBy === 'price_desc') return b.consultationPrice - a.consultationPrice;
     return 0;
   });
 
@@ -268,10 +524,12 @@ export default function LawyerSearch() {
       {/* Quick Filters */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         <FilterChip label={language === 'ar' ? "الكل" : "All"} active={activeSpecialty === 'all'} onClick={() => setActiveSpecialty('all')} />
+        <FilterChip label={language === 'ar' ? "مدني" : "Civil"} active={activeSpecialty === 'civil'} onClick={() => setActiveSpecialty('civil')} />
         <FilterChip label={language === 'ar' ? "أسرة" : "Family"} active={activeSpecialty === 'family'} onClick={() => setActiveSpecialty('family')} />
         <FilterChip label={language === 'ar' ? "جنائي" : "Criminal"} active={activeSpecialty === 'criminal'} onClick={() => setActiveSpecialty('criminal')} />
         <FilterChip label={language === 'ar' ? "عمالي" : "Labor"} active={activeSpecialty === 'labor'} onClick={() => setActiveSpecialty('labor')} />
         <FilterChip label={language === 'ar' ? "شركات" : "Commercial"} active={activeSpecialty === 'commercial'} onClick={() => setActiveSpecialty('commercial')} />
+        <FilterChip label={language === 'ar' ? "للمغتربين 🌍" : "For Expats 🌍"} active={activeSpecialty === 'expat'} onClick={() => setActiveSpecialty('expat')} />
       </div>
 
       {/* Lawyer List */}
@@ -327,11 +585,22 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
 
 function LawyerCard({ lawyer, language }: { lawyer: typeof MOCK_LAWYERS[0]; language: string; key?: React.Key }) {
   return (
-    <div className="bg-surface rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex gap-4">
+    <div className="bg-surface rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+      {lawyer.isExpatSpecialist && (
+        <div className="absolute top-0 left-0 bg-primary text-surface text-[10px] font-bold px-3 py-1 rounded-br-xl flex items-center gap-1 z-10">
+          🌍 {language === 'ar' ? 'دعم المغتربين' : 'Expat Support'}
+        </div>
+      )}
+      
+      <div className="flex gap-4 mt-2">
         {/* Avatar & Availability */}
         <div className="relative shrink-0">
-          <img src={lawyer.image} alt={lawyer.name} className="w-20 h-20 rounded-xl object-cover" />
+          <img 
+            src={lawyer.image} 
+            alt={lawyer.name} 
+            className="w-20 h-20 rounded-xl object-cover border border-gray-100" 
+            referrerPolicy="no-referrer"
+          />
           <div className={cn(
             "absolute -bottom-1 w-4 h-4 rounded-full border-2 border-surface",
             language === 'ar' ? "-right-1" : "-left-1",
@@ -367,18 +636,32 @@ function LawyerCard({ lawyer, language }: { lawyer: typeof MOCK_LAWYERS[0]; lang
             </div>
           </div>
 
-          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-50">
-            <div className="text-sm font-bold text-text">
-              {lawyer.price} {language === 'ar' ? 'ج.م' : 'EGP'} <span className="text-xs font-normal text-muted">/ 30 {language === 'ar' ? 'دقيقة' : 'min'}</span>
+          <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-gray-50">
+            <div className="space-y-1">
+              <p className="text-[10px] text-muted uppercase font-bold tracking-wider">{language === 'ar' ? 'الاستشارة' : 'Consultation'}</p>
+              <div className="text-sm font-bold text-text">
+                {lawyer.consultationPrice.toLocaleString()} {language === 'ar' ? 'ج.م' : 'EGP'} 
+                <span className="text-[10px] font-normal text-muted block">/ 30 {language === 'ar' ? 'دقيقة' : 'min'}</span>
+              </div>
             </div>
-            <div className={cn("flex gap-2", language === 'ar' ? "mr-auto" : "ml-auto")}>
-              <button className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-surface transition-colors">
-                <Phone size={16} />
-              </button>
-              <button className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-surface transition-colors">
-                <Video size={16} />
-              </button>
+            <div className="space-y-1 border-r border-gray-50 pr-2">
+              <p className="text-[10px] text-muted uppercase font-bold tracking-wider">{language === 'ar' ? 'أتعاب القضية' : 'Case Fees'}</p>
+              <div className="text-sm font-bold text-secondary">
+                {lawyer.casePriceRange} <span className="text-[10px] font-normal">{language === 'ar' ? 'ج.م' : 'EGP'}</span>
+                <span className="text-[10px] font-normal text-muted block">{language === 'ar' ? 'حسب المجهود' : 'Based on effort'}</span>
+              </div>
             </div>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <button className="flex-1 bg-primary text-surface py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+              <Phone size={14} />
+              {language === 'ar' ? 'اتصال' : 'Call'}
+            </button>
+            <button className="flex-1 bg-secondary text-surface py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-secondary/90 transition-colors">
+              <Video size={14} />
+              {language === 'ar' ? 'فيديو' : 'Video'}
+            </button>
           </div>
         </div>
       </div>

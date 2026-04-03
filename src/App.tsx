@@ -11,24 +11,48 @@ import AIAssistant from "./components/AIAssistant";
 import OutcomeSimulator from "./components/OutcomeSimulator";
 import KnowYourRights from "./components/KnowYourRights";
 import ContractDrafting from "./components/ContractDrafting";
-import OnboardingFlow from "./components/OnboardingFlow";
-import AdminPortal from "./components/AdminPortal";
+import MyCases from "./components/MyCases";
 import { LanguageProvider } from "./lib/i18n";
+import AdminPortal from "./components/AdminPortal";
+import SplashScreen from "./screens/SplashScreen";
+import LoginScreen from "./screens/LoginScreen";
+import RegisterScreen from "./screens/RegisterScreen";
+import ClientHomeScreen from "./screens/ClientHomeScreen";
+import GuestHomeScreen from "./screens/GuestHomeScreen";
+import RoleSelectionScreen from "./screens/RoleSelectionScreen";
+
+import ContractTypeScreen from "./screens/contracts/ContractTypeScreen";
+import ContractFormScreen from "./screens/contracts/ContractFormScreen";
+import ContractLoadingScreen from "./screens/contracts/ContractLoadingScreen";
+import ContractResultScreen from "./screens/contracts/ContractResultScreen";
 
 export default function App() {
   return (
     <LanguageProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<OnboardingFlow />} />
+          <Route path="/" element={<SplashScreen />} />
+          <Route path="/login" element={<LoginScreen />} />
+          <Route path="/register" element={<RegisterScreen />} />
+          <Route path="/guest-home" element={<GuestHomeScreen />} />
+          <Route path="/role-selection" element={<RoleSelectionScreen />} />
           <Route path="/developer-admin" element={<AdminPortal />} />
+          <Route path="/dashboard" element={<Navigate to="/app" replace />} />
+          
+          {/* Contract Flow Routes */}
+          <Route path="/contracts/type" element={<ContractTypeScreen />} />
+          <Route path="/contracts/form" element={<ContractFormScreen />} />
+          <Route path="/contracts/loading" element={<ContractLoadingScreen />} />
+          <Route path="/contracts/result" element={<ContractResultScreen />} />
+
           <Route path="/app" element={<Layout />}>
-            <Route index element={<Dashboard />} />
+            <Route index element={<ClientHomeScreen />} />
             <Route path="lawyers" element={<LawyerSearch />} />
             <Route path="ai-assistant" element={<AIAssistant />} />
             <Route path="simulator" element={<OutcomeSimulator />} />
             <Route path="rights" element={<KnowYourRights />} />
             <Route path="contracts" element={<ContractDrafting />} />
+            <Route path="cases" element={<MyCases />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

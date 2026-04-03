@@ -1,19 +1,43 @@
-import { Outlet, NavLink } from "react-router-dom";
-import { Home, Search, Bot, BookOpen, AlertTriangle, Globe, FileSignature } from "lucide-react";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Home, Search, Bot, BookOpen, AlertTriangle, Globe, FileSignature, Briefcase } from "lucide-react";
 import { cn } from "../lib/utils";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useLanguage } from "../lib/i18n";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function Layout() {
   const { t, toggleLanguage, language } = useLanguage();
+  const navigate = useNavigate();
+  const [isAuthReady, setIsAuthReady] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate('/login', { replace: true });
+      } else {
+        setIsAuthReady(true);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-20 md:pb-0 md:flex-row">
       {/* Mobile Header */}
       <header className="bg-primary text-surface p-4 flex items-center justify-between sticky top-0 z-10 md:hidden shadow-md">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-surface text-primary flex items-center justify-center font-bold text-xl">
-            ح
+          <div className="w-8 h-8 rounded-xl bg-surface text-primary flex items-center justify-center font-bold text-xl">
+            م
           </div>
           <h1 className="font-bold text-xl tracking-tight">{t('app.title')}</h1>
         </div>
@@ -27,11 +51,11 @@ export default function Layout() {
       </header>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-surface border-l border-gray-200 h-screen sticky top-0 p-4">
+      <aside className="hidden md:flex flex-col w-64 bg-surface border-l border-border h-screen sticky top-0 p-4">
         <div className="flex items-center justify-between mb-8 px-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary text-surface flex items-center justify-center font-bold text-2xl">
-              ح
+            <div className="w-10 h-10 rounded-xl bg-primary text-surface flex items-center justify-center font-bold text-2xl">
+              م
             </div>
             <h1 className="font-bold text-2xl text-primary tracking-tight">{t('app.title')}</h1>
           </div>
@@ -48,6 +72,7 @@ export default function Layout() {
           <NavItem to="/app/simulator" icon={<AlertTriangle size={20} />} label={t('nav.simulator')} />
           <NavItem to="/app/contracts" icon={<FileSignature size={20} />} label={t('nav.contracts')} />
           <NavItem to="/app/rights" icon={<BookOpen size={20} />} label={t('nav.rights')} />
+          <NavItem to="/app/cases" icon={<Briefcase size={20} />} label={t('nav.cases')} />
         </nav>
       </aside>
 
@@ -57,7 +82,7 @@ export default function Layout() {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-gray-200 flex justify-around items-end p-2 pb-safe z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border flex justify-around items-end p-2 pb-safe z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <MobileNavItem to="/app" end icon={<Home size={24} />} label={t('nav.home')} />
         <MobileNavItem to="/app/lawyers" icon={<Search size={24} />} label={t('nav.lawyers')} />
         
@@ -68,7 +93,7 @@ export default function Layout() {
             className={({ isActive }) =>
               cn(
                 "flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform hover:scale-105 border-4 border-surface",
-                isActive ? "bg-accent text-surface" : "bg-primary text-surface"
+                isActive ? "bg-gold text-surface" : "bg-primary text-surface"
               )
             }
           >
@@ -77,7 +102,7 @@ export default function Layout() {
         </div>
 
         <MobileNavItem to="/app/simulator" icon={<AlertTriangle size={24} />} label={t('nav.simulator')} />
-        <MobileNavItem to="/app/contracts" icon={<FileSignature size={24} />} label={t('nav.contracts')} />
+        <MobileNavItem to="/app/cases" icon={<Briefcase size={24} />} label={t('nav.cases')} />
       </nav>
 
       {/* Persistent Emergency Button */}

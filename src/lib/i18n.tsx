@@ -17,8 +17,9 @@ const translations = {
     'nav.simulator': 'محاكي',
     'nav.rights': 'حقوقك',
     'nav.contracts': 'صياغة العقود',
-    'app.title': 'حماية',
-    'app.subtitle': 'العميل',
+    'nav.cases': 'قضاياي',
+    'app.title': 'محامينا',
+    'app.subtitle': 'مساعدك القانوني الذكي',
     'lang.toggle': '⚙️ اللغة: العربية (مصر)',
     
     // Onboarding & Auth
@@ -39,6 +40,10 @@ const translations = {
     'role.lawyer.desc': 'عايز أقدم خدماتي',
     
     'login.title': 'سجل دخولك',
+    'login.email': 'البريد الإلكتروني',
+    'login.email.placeholder': 'example@mail.com',
+    'login.password': 'كلمة المرور',
+    'login.password.placeholder': '••••••••',
     'login.phone': 'رقم الموبايل',
     'login.phone.placeholder': '10xxxxxxx',
     'login.otp': 'كود التحقق (OTP)',
@@ -124,8 +129,9 @@ const translations = {
     'nav.simulator': 'Simulator',
     'nav.rights': 'Rights',
     'nav.contracts': 'Contracts',
-    'app.title': 'Himaya',
-    'app.subtitle': 'Client',
+    'nav.cases': 'My Cases',
+    'app.title': 'Mohamina',
+    'app.subtitle': 'Your Smart Legal Assistant',
     'lang.toggle': '⚙️ Language: English',
     
     // Onboarding & Auth
@@ -146,6 +152,10 @@ const translations = {
     'role.lawyer.desc': 'Want to offer my services',
     
     'login.title': 'Sign In',
+    'login.email': 'Email Address',
+    'login.email.placeholder': 'example@mail.com',
+    'login.password': 'Password',
+    'login.password.placeholder': '••••••••',
     'login.phone': 'Phone Number',
     'login.phone.placeholder': '10xxxxxxx',
     'login.otp': 'Verification Code (OTP)',
