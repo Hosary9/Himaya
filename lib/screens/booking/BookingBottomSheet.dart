@@ -11,12 +11,16 @@ class BookingBottomSheet extends StatefulWidget {
   final String lawyerId;
   final String lawyerName;
   final double consultationPrice;
+  final String serviceType;
+  final Map<String, dynamic> formData;
 
   const BookingBottomSheet({
     Key? key,
     required this.lawyerId,
     required this.lawyerName,
     required this.consultationPrice,
+    this.serviceType = 'consultation',
+    this.formData = const {},
   }) : super(key: key);
 
   @override
@@ -35,6 +39,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   
   double _walletBalance = 0;
   bool _isLoading = false;
+  String? _errorMessage;
 
   // Hardcoded colors
   final Color _primary = const Color(0xFF1A3A5C);
@@ -90,7 +95,10 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   Future<void> _confirmBooking() async {
     if (_selectedType == null || _selectedDate == null || _selectedTime == null) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
       final scheduledAt = DateTime(
@@ -126,9 +134,22 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ: ${e.toString()}'), backgroundColor: _emergency),
-        );
+        setState(() {
+          final errorStr = e.toString().toLowerCase();
+          if (errorStr.contains('insufficient balance')) {
+            _errorMessage = 'عذراً، رصيدك غير كافٍ لإتمام هذا الحجز. يرجى شحن محفظتك والمحاولة مرة أخرى.';
+          } else if (errorStr.contains('wallet not found')) {
+            _errorMessage = 'لم يتم العثور على محفظتك الرقمية، يرجى التواصل مع الدعم الفني.';
+          } else if (errorStr.contains('permission-denied')) {
+            _errorMessage = 'عذراً، ليس لديك الصلاحية لإتمام هذا الحجز. يرجى التأكد من تسجيل الدخول بشكل صحيح.';
+          } else if (errorStr.contains('unavailable') || errorStr.contains('network-request-failed')) {
+            _errorMessage = 'فشل الاتصال بالخادم، يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.';
+          } else if (errorStr.contains('deadline-exceeded')) {
+            _errorMessage = 'استغرقت العملية وقتاً طويلاً، يرجى المحاولة مرة أخرى.';
+          } else {
+            _errorMessage = 'حدث خطأ غير متوقع أثناء معالجة الحجز. يرجى المحاولة مرة أخرى لاحقاً.';
+          }
+        });
       }
     } finally {
       if (mounted) {
@@ -172,7 +193,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                     children: [
                       _buildStep1(),
                       _buildStep2(),
-                      _buildStep3(),
+                      _buildStep3(widget.formData),
                       _buildStep4(),
                     ],
                   ),
@@ -497,7 +518,26 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
     return '${displayHour.toString().padLeft(2, '0')}:$minute $ampm';
   }
 
-  Widget _buildStep3() {
+  String _getServiceLabel() {
+    switch (widget.serviceType) {
+      case 'case':
+        return 'رفع قضية';
+      case 'contract':
+        return 'صياغة عقد';
+      case 'review':
+        return 'مراجعة مستند';
+      case 'notarization':
+        return 'توثيق رسمي';
+      case 'urgent':
+        return 'استشارة طارئة';
+      default:
+        return 'استشارة قانونية';
+    }
+  }
+
+  Widget _buildStep3(Map<String, dynamic> formData) {
+    final bool isConsultation = widget.serviceType == 'consultation';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -522,11 +562,27 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
               children: [
                 Text("المحامي: ${widget.lawyerName}", style: TextStyle(fontWeight: FontWeight.bold, color: _text)),
                 const SizedBox(height: 8),
-                Text("نوع الاستشارة: ${_selectedType?.arabicLabel ?? ''}", style: TextStyle(color: _muted)),
-                const SizedBox(height: 8),
-                Text("الموعد: ${DateFormat('yyyy-MM-dd').format(_selectedDate ?? DateTime.now())} الساعة ${_selectedTime != null ? _formatTimeOfDay(_selectedTime!) : ''}", style: TextStyle(color: _muted)),
-                const SizedBox(height: 8),
-                Text("المدة: 30 دقيقة", style: TextStyle(color: _muted)),
+                if (isConsultation) ...[
+                  Text("نوع الاستشارة: ${_selectedType?.arabicLabel ?? ''}", style: TextStyle(color: _muted)),
+                  const SizedBox(height: 8),
+                  Text(
+                    "الموعد: ${DateFormat('yyyy-MM-dd').format(_selectedDate ?? DateTime.now())} الساعة ${_selectedTime != null ? _formatTimeOfDay(_selectedTime!) : ''}",
+                    style: TextStyle(color: _muted),
+                  ),
+                  const SizedBox(height: 8),
+                  Text("المدة: 30 دقيقة", style: TextStyle(color: _muted)),
+                ] else ...[
+                  Text("نوع الخدمة: ${_getServiceLabel()}", style: TextStyle(color: _muted)),
+                  const SizedBox(height: 8),
+                  if (formData.containsKey('description')) ...[
+                    Text("الوصف: ${formData['description']}", style: TextStyle(color: _muted)),
+                    const SizedBox(height: 8),
+                  ],
+                  if (formData.containsKey('selectedTime')) ...[
+                    Text("الموعد: ${formData['selectedTime']}", style: TextStyle(color: _muted)),
+                    const SizedBox(height: 8),
+                  ],
+                ],
               ],
             ),
           ),
@@ -587,6 +643,47 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
 
   Widget _buildStep4() {
     final bool hasEnoughBalance = _walletBalance >= _totalAmount;
+
+    if (_errorMessage != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, color: _emergency, size: 64),
+            const SizedBox(height: 24),
+            Text(
+              "فشل تأكيد الحجز",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _text),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: _muted),
+            ),
+            const SizedBox(height: 48),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _confirmBooking,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text("إعادة المحاولة 🔄", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => setState(() => _errorMessage = null),
+              child: Text("إلغاء والرجوع", style: TextStyle(color: _muted)),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),

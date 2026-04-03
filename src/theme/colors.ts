@@ -8,6 +8,7 @@ const COLORS = {
   muted:      '#6B7C8D',   // calm gray-blue
   border:     '#E8E0D0',   // warm beige border
   emergency:  '#B03A2E',   // deep red
+  secondary:  '#C9A84C',   // pharaonic gold (same as gold for now)
   dark:       '#0F2540',   // darkest navy
 };
 

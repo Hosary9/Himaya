@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Star, MapPin, Clock, ShieldCheck, Filter, ChevronDown, Video, Phone, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Star, MapPin, Clock, ShieldCheck, Filter, ChevronDown, Video, Phone, AlertTriangle, CheckCircle2, Calendar } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { useLanguage } from "../lib/i18n";
 import { db, auth } from "../firebase";
 import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
+import { BookingModal } from './BookingModal';
+import { ServiceSelectionSheet } from './ServiceSelectionSheet';
+import { motion } from 'motion/react';
+import { Scale, ArrowRight, ArrowLeft } from 'lucide-react';
 
 enum OperationType {
   CREATE = 'create',
@@ -76,7 +80,7 @@ const MOCK_LAWYERS = [
     matchScore: 98,
     consultationPrice: 150,
     casePriceRange: "5,000 - 50,000",
-    image: "https://picsum.photos/seed/lawyer-m1/150/150",
+    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&h=150&fit=crop",
     isExpatSpecialist: false
   },
   {
@@ -97,7 +101,7 @@ const MOCK_LAWYERS = [
     matchScore: 85,
     consultationPrice: 200,
     casePriceRange: "10,000 - 200,000",
-    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712127999.png",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop",
     isExpatSpecialist: true
   },
   {
@@ -118,7 +122,7 @@ const MOCK_LAWYERS = [
     matchScore: 75,
     consultationPrice: 250,
     casePriceRange: "20,000 - 300,000",
-    image: "https://picsum.photos/seed/lawyer-m2/150/150",
+    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop",
     isExpatSpecialist: false
   },
   {
@@ -139,7 +143,7 @@ const MOCK_LAWYERS = [
     matchScore: 95,
     consultationPrice: 100,
     casePriceRange: "3,000 - 30,000",
-    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128000.png",
+    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop",
     isExpatSpecialist: false
   },
   {
@@ -160,7 +164,7 @@ const MOCK_LAWYERS = [
     matchScore: 88,
     consultationPrice: 120,
     casePriceRange: "5,000 - 100,000",
-    image: "https://picsum.photos/seed/lawyer-m3/150/150",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
     isExpatSpecialist: true
   },
   {
@@ -181,7 +185,7 @@ const MOCK_LAWYERS = [
     matchScore: 92,
     consultationPrice: 180,
     casePriceRange: "10,000 - 150,000",
-    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128001.png",
+    image: "https://images.unsplash.com/photo-1567532939604-b6c5b0ad2e01?w=150&h=150&fit=crop",
     isExpatSpecialist: true
   },
   {
@@ -202,7 +206,7 @@ const MOCK_LAWYERS = [
     matchScore: 80,
     consultationPrice: 220,
     casePriceRange: "25,000 - 300,000",
-    image: "https://picsum.photos/seed/lawyer-m4/150/150",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop",
     isExpatSpecialist: false
   },
   {
@@ -223,7 +227,7 @@ const MOCK_LAWYERS = [
     matchScore: 89,
     consultationPrice: 130,
     casePriceRange: "4,000 - 60,000",
-    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128002.png",
+    image: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=150&h=150&fit=crop",
     isExpatSpecialist: true
   },
   {
@@ -244,7 +248,7 @@ const MOCK_LAWYERS = [
     matchScore: 82,
     consultationPrice: 110,
     casePriceRange: "6,000 - 80,000",
-    image: "https://picsum.photos/seed/lawyer-m5/150/150",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
     isExpatSpecialist: true
   },
   {
@@ -265,7 +269,7 @@ const MOCK_LAWYERS = [
     matchScore: 87,
     consultationPrice: 90,
     casePriceRange: "3,000 - 40,000",
-    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128001.png",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop",
     isExpatSpecialist: false
   },
   {
@@ -286,7 +290,7 @@ const MOCK_LAWYERS = [
     matchScore: 94,
     consultationPrice: 300,
     casePriceRange: "30,000 - 500,000",
-    image: "https://picsum.photos/seed/lawyer-m6/150/150",
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop",
     isExpatSpecialist: true
   },
   {
@@ -307,7 +311,7 @@ const MOCK_LAWYERS = [
     matchScore: 84,
     consultationPrice: 140,
     casePriceRange: "10,000 - 120,000",
-    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128000.png",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
     isExpatSpecialist: false
   },
   {
@@ -328,7 +332,7 @@ const MOCK_LAWYERS = [
     matchScore: 99,
     consultationPrice: 50000,
     casePriceRange: "500,000 - 3,000,000",
-    image: "https://storage.googleapis.com/pai-images/4904080436444938092b/image_1712128363.png",
+    image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=150&h=150&fit=crop",
     isExpatSpecialist: true
   }
 ];
@@ -346,6 +350,9 @@ export default function LawyerSearch() {
   const state = location.state as { specialty?: string, caseType?: string, isUrgent?: boolean, description?: string } | null;
 
   const [lawyers, setLawyers] = useState<any[]>([]);
+  const [selectedLawyerForBooking, setSelectedLawyerForBooking] = useState<any | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isServiceSheetOpen, setIsServiceSheetOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeSpecialty, setActiveSpecialty] = useState(state?.specialty || 'all');
   const [activeGovernorate, setActiveGovernorate] = useState('all');
@@ -536,7 +543,15 @@ export default function LawyerSearch() {
       <div className="space-y-4">
         {filteredLawyers.length > 0 ? (
           filteredLawyers.map(lawyer => (
-            <LawyerCard key={lawyer.id} lawyer={lawyer} language={language} />
+            <LawyerCard 
+              key={lawyer.id} 
+              lawyer={lawyer} 
+              language={language} 
+              onStart={(selected) => {
+                setSelectedLawyerForBooking(selected);
+                setIsServiceSheetOpen(true);
+              }}
+            />
           ))
         ) : (
           <div className="text-center py-12 bg-surface rounded-2xl border border-gray-100 border-dashed">
@@ -554,6 +569,27 @@ export default function LawyerSearch() {
           </div>
         )}
       </div>
+
+      <BookingModal 
+        isOpen={isBookingModalOpen} 
+        onClose={() => setIsBookingModalOpen(false)} 
+        lawyer={selectedLawyerForBooking} 
+      />
+
+      <ServiceSelectionSheet
+        isOpen={isServiceSheetOpen}
+        onClose={() => setIsServiceSheetOpen(false)}
+        lawyer={selectedLawyerForBooking}
+        onSelectService={(serviceId) => {
+          setIsServiceSheetOpen(false);
+          if (serviceId === 'consultation') {
+            setIsBookingModalOpen(true);
+          } else {
+            // Handle other services or show a "Coming Soon" message
+            console.log(`Selected service: ${serviceId}`);
+          }
+        }}
+      />
     </div>
   );
 }
@@ -583,7 +619,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
   );
 }
 
-function LawyerCard({ lawyer, language }: { lawyer: typeof MOCK_LAWYERS[0]; language: string; key?: React.Key }) {
+function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS[0]; language: string; key?: React.Key; onStart: (lawyer: any) => void }) {
   return (
     <div className="bg-surface rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
       {lawyer.isExpatSpecialist && (
@@ -598,8 +634,12 @@ function LawyerCard({ lawyer, language }: { lawyer: typeof MOCK_LAWYERS[0]; lang
           <img 
             src={lawyer.image} 
             alt={lawyer.name} 
-            className="w-20 h-20 rounded-xl object-cover border border-gray-100" 
+            className="w-16 h-16 rounded-[12px] object-cover border border-gray-100" 
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(lawyer.name)}&background=random&color=fff`;
+            }}
           />
           <div className={cn(
             "absolute -bottom-1 w-4 h-4 rounded-full border-2 border-surface",
@@ -653,15 +693,19 @@ function LawyerCard({ lawyer, language }: { lawyer: typeof MOCK_LAWYERS[0]; lang
             </div>
           </div>
 
-          <div className="flex gap-2 mt-4">
-            <button className="flex-1 bg-primary text-surface py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
-              <Phone size={14} />
-              {language === 'ar' ? 'اتصال' : 'Call'}
-            </button>
-            <button className="flex-1 bg-secondary text-surface py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-secondary/90 transition-colors">
-              <Video size={14} />
-              {language === 'ar' ? 'فيديو' : 'Video'}
-            </button>
+          <div className="mt-4">
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onStart(lawyer)}
+              className="w-full bg-primary text-surface py-3.5 rounded-2xl text-base font-bold flex items-center justify-center gap-3 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 group"
+            >
+              <Scale size={20} className="group-hover:rotate-12 transition-transform" />
+              <span>
+                {language === 'ar' ? 'ابدأ مع المحامي' : 'Start with a Lawyer'}
+              </span>
+              {language === 'ar' ? <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> : <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+            </motion.button>
           </div>
         </div>
       </div>
