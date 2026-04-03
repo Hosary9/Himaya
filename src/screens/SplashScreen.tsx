@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import COLORS from '../theme/colors';
+import AnimatedLogo from '../components/AnimatedLogo';
 
 export default function SplashScreen({ onComplete }: { onComplete?: () => void }) {
   const [dots, setDots] = useState([false, false, false]);
@@ -52,14 +53,14 @@ export default function SplashScreen({ onComplete }: { onComplete?: () => void }
               className="mb-8"
             />
 
-            {/* Step 3: Icon "⚖️" scales from 0.2 → 1 using spring */}
+            {/* Step 3: AnimatedLogo scales from 0.2 → 1 using spring */}
             <motion.div
               initial={{ scale: 0.2, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.6, type: 'spring', stiffness: 200, damping: 15 }}
-              className="text-[80px] mb-4"
+              className="mb-4"
             >
-              ⚖️
+              <AnimatedLogo size={100} />
             </motion.div>
 
             {/* EGYPTIAN SUBTLE TOUCH: Fades in with the icon at step 3 */}

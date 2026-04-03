@@ -17,6 +17,7 @@ import COLORS from '../theme/colors';
 import { useLanguage } from '../lib/i18n';
 import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import AnimatedLogo from '../components/AnimatedLogo';
 
 export default function ClientHomeScreen() {
   const navigate = useNavigate();
@@ -81,9 +82,7 @@ export default function ClientHomeScreen() {
       {/* Header */}
       <header className="bg-white px-6 py-4 flex items-center justify-between shadow-sm border-b" style={{ borderColor: COLORS.border }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: COLORS.primary }}>
-            <span className="text-white font-bold text-xl">م</span>
-          </div>
+          <AnimatedLogo size={40} />
           <h1 className="text-xl font-bold" style={{ color: COLORS.primary }}>محامينا</h1>
         </div>
         <div className="flex items-center gap-4">

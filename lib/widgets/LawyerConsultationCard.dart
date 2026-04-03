@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../screens/payment/ConsultationPaymentScreen.dart';
+import '../screens/booking/BookingBottomSheet.dart';
 import 'ComingSoonDialog.dart';
 
 class LawyerConsultationCard extends StatelessWidget {
+  final String? lawyerId;
   final String lawyerName;
   final String specialty;
   final int price;
@@ -12,6 +14,7 @@ class LawyerConsultationCard extends StatelessWidget {
 
   const LawyerConsultationCard({
     Key? key,
+    this.lawyerId,
     required this.lawyerName,
     required this.specialty,
     required this.price,
@@ -127,70 +130,37 @@ class LawyerConsultationCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 40,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFE8E0D0)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => const ComingSoonDialog(),
-                      );
-                    },
-                    child: const Text(
-                      "اتصال 📞",
-                      style: TextStyle(
-                        color: Color(0xFF6B7C8D),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+          SizedBox(
+            width: double.infinity,
+            height: 40,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D6A4F),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => BookingBottomSheet(
+                    lawyerId: lawyerId ?? 'mock_lawyer_id',
+                    lawyerName: lawyerName,
+                    consultationPrice: enforcedPrice.toDouble(),
                   ),
+                );
+              },
+              child: const Text(
+                "احجز استشارة →",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: SizedBox(
-                  height: 40,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D6A4F),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ConsultationPaymentScreen(
-                            lawyerName: lawyerName,
-                            specialty: specialty,
-                            price: enforcedPrice,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "احجز استشارة →",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

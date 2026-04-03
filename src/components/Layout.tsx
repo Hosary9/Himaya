@@ -5,6 +5,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useLanguage } from "../lib/i18n";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import AnimatedLogo from "./AnimatedLogo";
 
 export default function Layout() {
   const { t, toggleLanguage, language } = useLanguage();
@@ -36,9 +37,7 @@ export default function Layout() {
       {/* Mobile Header */}
       <header className="bg-primary text-surface p-4 flex items-center justify-between sticky top-0 z-10 md:hidden shadow-md">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-surface text-primary flex items-center justify-center font-bold text-xl">
-            م
-          </div>
+          <AnimatedLogo size={32} />
           <h1 className="font-bold text-xl tracking-tight">{t('app.title')}</h1>
         </div>
         <div className="flex items-center gap-4">
@@ -54,9 +53,7 @@ export default function Layout() {
       <aside className="hidden md:flex flex-col w-64 bg-surface border-l border-border h-screen sticky top-0 p-4">
         <div className="flex items-center justify-between mb-8 px-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary text-surface flex items-center justify-center font-bold text-2xl">
-              م
-            </div>
+            <AnimatedLogo size={40} />
             <h1 className="font-bold text-2xl text-primary tracking-tight">{t('app.title')}</h1>
           </div>
           <button onClick={toggleLanguage} className="flex items-center gap-1 text-sm text-muted hover:text-primary transition-colors bg-gray-50 px-2 py-1 rounded-lg">

@@ -13,6 +13,7 @@ import {
   X
 } from 'lucide-react';
 import COLORS from '../theme/colors';
+import AnimatedLogo from '../components/AnimatedLogo';
 
 export default function GuestHomeScreen() {
   const navigate = useNavigate();
@@ -70,9 +71,7 @@ export default function GuestHomeScreen() {
       {/* Header */}
       <header className="bg-white px-6 py-4 flex items-center justify-between shadow-sm border-b" style={{ borderColor: COLORS.border }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: COLORS.primary }}>
-            <span className="text-white font-bold text-xl">م</span>
-          </div>
+          <AnimatedLogo size={40} />
           <h1 className="text-xl font-bold" style={{ color: COLORS.primary }}>محامينا</h1>
         </div>
         <div className="flex items-center gap-4">

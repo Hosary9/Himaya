@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import ForgotPasswordSheet from './auth/ForgotPasswordSheet';
+import AnimatedLogo from '../components/AnimatedLogo';
 
 export default function LoginScreen() {
   const navigate = useNavigate();
@@ -84,9 +85,9 @@ export default function LoginScreen() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", bounce: 0.6, duration: 0.8 }}
-            className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-2xl bg-[#1A3A5C] border-2 border-[#C9A84C]/30"
+            className="mb-6"
           >
-            <Shield size={40} color="#C9A84C" />
+            <AnimatedLogo size={80} />
           </motion.div>
           
           <motion.h1 
