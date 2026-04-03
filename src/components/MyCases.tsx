@@ -102,7 +102,11 @@ export default function MyCases() {
           </div>
         ) : (
           filteredActivities.map(activity => (
-            <div key={activity.id} className="bg-surface rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between hover:border-primary/20 transition-all">
+            <div 
+              key={activity.id} 
+              onClick={() => navigate(`/${activity.type}-details/${activity.id}`)}
+              className="bg-surface rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:border-primary/20 transition-all active:scale-[0.98]"
+            >
               <div className="flex items-center gap-4">
                 <div className={cn("p-3 rounded-xl", activity.type === 'case' ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent')}>
                   {activity.type === 'case' ? <Scale size={24} /> : activity.type === 'consultation' ? <MessageSquare size={24} /> : <FileText size={24} />}

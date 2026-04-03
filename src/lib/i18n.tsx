@@ -55,6 +55,19 @@ const translations = {
     'dash.morning': 'صباح الخير، {name} 👋',
     'dash.evening': 'مساء الخير، {name} 👋',
     
+    'welcome': 'أهلاً بك',
+    'how_can_help': 'كيف يمكن لمحامينا مساعدتك اليوم؟',
+    'need_help': 'محتاج مساعدة',
+    'find_lawyer': 'ابحث عن محامي',
+    'case_simulator': 'محاكي القضايا',
+    'extra_services': 'خدمات إضافية',
+    'know_rights': 'اعرف حقوقك',
+    'contracts': 'صياغة عقود',
+    'my_cases': 'قضاياي',
+    'emergency_title': 'حالة طوارئ قانونية؟',
+    'emergency_desc': 'تواصل مع محامي طوارئ فوراً',
+    'emergency_call': 'اتصل الآن',
+    
     // Simulator
     'sim.title': 'محاكي نتائج القضايا',
     'sim.subtitle': 'أداة حصرية تعتمد على الذكاء الاصطناعي وتحليل آلاف القضايا السابقة في المحاكم المصرية لتوقع نسبة نجاح قضيتك.',
@@ -166,6 +179,19 @@ const translations = {
     // Dashboard
     'dash.morning': 'Good Morning, {name} 👋',
     'dash.evening': 'Good Evening, {name} 👋',
+    
+    'welcome': 'Welcome',
+    'how_can_help': 'How can Mohamena help you today?',
+    'need_help': 'Need Help',
+    'find_lawyer': 'Find a Lawyer',
+    'case_simulator': 'Case Simulator',
+    'extra_services': 'Additional Services',
+    'know_rights': 'Know Your Rights',
+    'contracts': 'Contracts',
+    'my_cases': 'My Cases',
+    'emergency_title': 'Legal Emergency?',
+    'emergency_desc': 'Contact an emergency lawyer immediately',
+    'emergency_call': 'Call Now',
     
     // Simulator
     'sim.title': 'Legal Outcome Simulator',

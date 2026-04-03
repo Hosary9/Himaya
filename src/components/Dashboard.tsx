@@ -23,7 +23,7 @@ export default function Dashboard() {
       </section>
 
       {/* Daily Smart Legal Tip */}
-      <section className="bg-gradient-to-l from-primary to-[#2a5a9e] rounded-2xl p-5 text-surface shadow-md relative overflow-hidden">
+      <section className="bg-gradient-to-l from-primary to-[#2a5a9e] rounded-2xl p-5 text-surface shadow-md relative overflow-hidden hover:scale-[1.02] transition-transform duration-300">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
         <div className="relative z-10 flex gap-4 items-start">
           <div className="bg-surface/20 p-2 rounded-lg shrink-0">

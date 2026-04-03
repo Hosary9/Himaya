@@ -8,12 +8,15 @@ import { onAuthStateChanged } from "firebase/auth";
 import AnimatedLogo from "./AnimatedLogo";
 import { AuthContext } from "../App";
 import COLORS from "../theme/colors";
+import SmartAlertsCenter from "./SmartAlertsCenter";
 
 export default function Layout() {
   const { t, toggleLanguage, language } = useLanguage();
   const navigate = useNavigate();
   const { isGuest, user, setGuest } = useContext(AuthContext);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+  const [alertCount, setAlertCount] = useState(3); // Mock count
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -145,9 +148,26 @@ export default function Layout() {
         <MobileNavItem to="/app/cases" icon={<Briefcase size={24} />} label={t('nav.cases')} />
       </nav>
 
-      {/* Persistent Emergency Button */}
-      <button className="fixed bottom-20 md:bottom-8 left-4 md:left-8 bg-emergency text-surface w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-30 hover:scale-105 transition-transform animate-pulse">
+      {/* Smart Alerts Center */}
+      <SmartAlertsCenter 
+        isOpen={isAlertsOpen} 
+        onClose={() => setIsAlertsOpen(false)} 
+        onAlertClick={() => setAlertCount(prev => Math.max(0, prev - 1))} 
+      />
+
+      {/* Persistent Smart Alerts Button */}
+      <button 
+        onClick={() => setIsAlertsOpen(true)}
+        className={cn(
+          "fixed bottom-8 left-8 z-[9999] bg-emergency text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center hover:scale-105 transition-all animate-pulse"
+        )}
+      >
         <AlertTriangle size={28} />
+        {alertCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-white text-red-600 text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
+            {alertCount}
+          </span>
+        )}
       </button>
     </div>
   );
