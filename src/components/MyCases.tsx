@@ -1,6 +1,8 @@
 import { useLanguage } from "../lib/i18n";
 import { cn } from "../lib/utils";
-import { Clock, ChevronLeft, Briefcase, CheckCircle2, AlertCircle } from "lucide-react";
+import { Clock, ChevronLeft, Briefcase, CheckCircle2, AlertCircle, Lock } from "lucide-react";
+import { useGuestRestriction } from "../hooks/useGuestRestriction";
+import { useNavigate } from "react-router-dom";
 
 const CASES = [
   {
@@ -49,6 +51,40 @@ const CASES = [
 
 export default function MyCases() {
   const { language } = useLanguage();
+  const { isGuest } = useGuestRestriction();
+  const navigate = useNavigate();
+
+  if (isGuest) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-center animate-in fade-in duration-500">
+        <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-6">
+          <Lock size={40} />
+        </div>
+        <h2 className="text-2xl font-bold text-text mb-3">
+          {language === 'ar' ? 'سجل دخولك لمتابعة قضاياك' : 'Sign in to track your cases'}
+        </h2>
+        <p className="text-muted max-w-sm mb-8 leading-relaxed">
+          {language === 'ar' 
+            ? 'تحتاج إلى حساب لمتابعة حالة قضاياك، التواصل مع المحامين، والاطلاع على الخطوات القادمة.' 
+            : 'You need an account to track your case status, communicate with lawyers, and see next steps.'}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
+          <button 
+            onClick={() => navigate('/register')}
+            className="flex-1 bg-primary text-surface font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+          >
+            {language === 'ar' ? 'إنشاء حساب جديد' : 'Create New Account'}
+          </button>
+          <button 
+            onClick={() => navigate('/login')}
+            className="flex-1 bg-surface border border-gray-200 text-text font-bold py-3.5 rounded-xl hover:bg-gray-50 transition-all"
+          >
+            {language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">

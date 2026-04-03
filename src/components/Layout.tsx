@@ -1,20 +1,23 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Home, Search, Bot, BookOpen, AlertTriangle, Globe, FileSignature, Briefcase } from "lucide-react";
+import { Home, Search, Bot, BookOpen, AlertTriangle, Globe, FileSignature, Briefcase, LogIn, X, AlertCircle } from "lucide-react";
 import { cn } from "../lib/utils";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useContext } from "react";
 import { useLanguage } from "../lib/i18n";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import AnimatedLogo from "./AnimatedLogo";
+import { AuthContext } from "../App";
+import COLORS from "../theme/colors";
 
 export default function Layout() {
   const { t, toggleLanguage, language } = useLanguage();
   const navigate = useNavigate();
+  const { isGuest, user, setGuest } = useContext(AuthContext);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser && !isGuest) {
         navigate('/login', { replace: true });
       } else {
         setIsAuthReady(true);
@@ -22,7 +25,7 @@ export default function Layout() {
     });
 
     return () => unsubscribe();
-  }, [navigate]);
+  }, [navigate, isGuest]);
 
   if (!isAuthReady) {
     return (
@@ -31,6 +34,15 @@ export default function Layout() {
       </div>
     );
   }
+
+  const handleLogout = () => {
+    if (isGuest) {
+      setGuest(false);
+      navigate('/login', { replace: true });
+    } else {
+      auth.signOut();
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-20 md:pb-0 md:flex-row">
@@ -45,7 +57,14 @@ export default function Layout() {
             <Globe size={16} />
             <span>{language === 'ar' ? 'EN' : 'AR'}</span>
           </button>
-          <div className="text-sm opacity-80">{t('app.subtitle')}</div>
+          {isGuest && (
+            <button 
+              onClick={() => navigate('/login')}
+              className="bg-gold text-primary px-3 py-1 rounded-lg text-xs font-bold shadow-sm"
+            >
+              سجل دخول
+            </button>
+          )}
         </div>
       </header>
 
@@ -71,10 +90,34 @@ export default function Layout() {
           <NavItem to="/app/rights" icon={<BookOpen size={20} />} label={t('nav.rights')} />
           <NavItem to="/app/cases" icon={<Briefcase size={20} />} label={t('nav.cases')} />
         </nav>
+
+        <div className="mt-auto pt-4 border-t border-border">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted hover:bg-red-50 hover:text-red-600 transition-colors w-full"
+          >
+            <LogIn size={20} className={isGuest ? "" : "rotate-180"} />
+            <span>{isGuest ? "تسجيل دخول" : "تسجيل خروج"}</span>
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8">
+        {isGuest && (
+          <div className="mb-6 p-4 bg-gold/10 border border-gold rounded-2xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="text-gold shrink-0" size={20} />
+              <p className="text-sm font-bold text-primary">أنت تتصفح كضيف. سجل حسابك الآن للوصول لكافة المميزات.</p>
+            </div>
+            <button 
+              onClick={() => navigate('/login')}
+              className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
+              إنشاء حساب 🎉
+            </button>
+          </div>
+        )}
         <Outlet />
       </main>
 

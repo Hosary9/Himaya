@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock, User, Phone, CheckCircle2, ChevronRight, Briefcase, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -6,9 +6,11 @@ import confetti from 'canvas-confetti';
 import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { AuthContext } from '../App';
 
 export default function RegisterScreen() {
   const navigate = useNavigate();
+  const { setGuest } = useContext(AuthContext);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -102,6 +104,11 @@ export default function RegisterScreen() {
     }
   };
 
+  const handleGuestMode = () => {
+    setGuest(true);
+    navigate('/app', { replace: true });
+  };
+
   const getPasswordStrength = () => {
     if (password.length === 0) return { width: '0%', color: '#E8E0D0', text: '' };
     if (password.length <= 3) return { width: '33%', color: '#B03A2E', text: 'ضعيفة' };
@@ -121,7 +128,7 @@ export default function RegisterScreen() {
         ] 
       }}
       transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-      className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden"
+      className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
       dir="rtl"
     >
       <AnimatePresence>
@@ -146,24 +153,24 @@ export default function RegisterScreen() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-md w-full z-10">
+      <div className="max-w-md w-full z-10 flex flex-col max-h-screen">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 shrink-0">
           <motion.div
             layoutId="hero-shield"
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl bg-[#1A3A5C] border-2 border-[#C9A84C]/30"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xl bg-[#1A3A5C] border-2 border-[#C9A84C]/30"
           >
-            <Shield size={32} color="#C9A84C" />
+            <Shield size={28} color="#C9A84C" />
           </motion.div>
-          <h1 className="text-2xl font-bold text-white mb-2">إنشاء حساب جديد</h1>
+          <h1 className="text-xl font-bold text-white mb-1">إنشاء حساب جديد</h1>
         </div>
 
         {/* Step Indicator */}
-        <div className="flex items-center justify-center mb-8 px-8">
-          <div className="flex items-center relative w-full max-w-[200px]">
+        <div className="flex items-center justify-center mb-6 px-8 shrink-0">
+          <div className="flex items-center relative w-full max-w-[180px]">
             <motion.div 
               animate={{ backgroundColor: step >= 1 ? '#C9A84C' : '#E8E0D0' }}
-              className="w-4 h-4 rounded-full z-10"
+              className="w-3.5 h-3.5 rounded-full z-10"
             />
             <div className="flex-1 h-1 bg-[#E8E0D0]/30 mx-2 relative overflow-hidden rounded-full">
               <motion.div 
@@ -178,13 +185,13 @@ export default function RegisterScreen() {
                 backgroundColor: step === 2 ? '#C9A84C' : 'transparent',
                 borderColor: step === 2 ? '#C9A84C' : '#E8E0D0'
               }}
-              className="w-4 h-4 rounded-full border-2 z-10 transition-colors duration-300"
+              className="w-3.5 h-3.5 rounded-full border-2 z-10 transition-colors duration-300"
             />
           </div>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white/95 backdrop-blur-xl p-8 rounded-[24px] shadow-[0_8px_32px_rgba(26,58,92,0.2)] border border-white/20 overflow-hidden relative">
+        <div className="bg-white/95 backdrop-blur-xl p-6 rounded-[24px] shadow-[0_8px_32px_rgba(26,58,92,0.2)] border border-white/20 flex flex-col max-h-[70vh]">
           
           <AnimatePresence mode="wait">
             {errors.form && (
@@ -192,7 +199,7 @@ export default function RegisterScreen() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="bg-[#B03A2E]/15 border border-[#B03A2E] text-[#B03A2E] p-3 rounded-xl flex items-center gap-2 text-sm font-bold mb-4"
+                className="bg-[#B03A2E]/15 border border-[#B03A2E] text-[#B03A2E] p-3 rounded-xl flex items-center gap-2 text-sm font-bold mb-4 shrink-0"
               >
                 <span>⚠️</span>
                 <span>{errors.form}</span>
@@ -200,17 +207,17 @@ export default function RegisterScreen() {
             )}
           </AnimatePresence>
 
-          <div className="relative min-h-[350px]">
-            <AnimatePresence initial={false} custom={step}>
+          <div className="flex-1 overflow-y-auto pr-1 -mr-1 custom-scrollbar">
+            <AnimatePresence initial={false} custom={step} mode="wait">
               {step === 1 && (
                 <motion.div
                   key="step1"
                   custom={step}
-                  initial={{ opacity: 0, x: -50 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 50 }}
+                  exit={{ opacity: 0, x: 20 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute inset-0 flex flex-col gap-4"
+                  className="flex flex-col gap-4 pb-4"
                 >
                   <InputField 
                     icon={<User />} placeholder="الاسم الكامل" value={name} onChange={setName}
@@ -227,17 +234,6 @@ export default function RegisterScreen() {
                     error={errors.email} shakeKey={shakeKey} delay={0.3} type="email"
                     focused={focusedField === 'email'} onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField(null)}
                   />
-                  
-                  <div className="mt-auto pt-4">
-                    <motion.button 
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleNext}
-                      className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-[#1A3A5C] hover:bg-[#0F2540]"
-                    >
-                      التالي
-                      <ChevronRight size={20} className="rotate-180" />
-                    </motion.button>
-                  </div>
                 </motion.div>
               )}
 
@@ -245,13 +241,13 @@ export default function RegisterScreen() {
                 <motion.div
                   key="step2"
                   custom={step}
-                  initial={{ opacity: 0, x: -50 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 50 }}
+                  exit={{ opacity: 0, x: 20 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute inset-0 flex flex-col gap-4"
+                  className="flex flex-col gap-4 pb-4"
                 >
-                  <div className="flex items-center mb-2">
+                  <div className="flex items-center mb-1">
                     <button onClick={() => setStep(1)} className="text-[#6B7C8D] hover:text-[#1A3A5C] flex items-center text-sm font-bold">
                       <ChevronRight size={18} /> رجوع
                     </button>
@@ -283,45 +279,56 @@ export default function RegisterScreen() {
 
                   <motion.div 
                     initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
-                    className="mt-2"
+                    className="mt-1"
                   >
-                    <p className="text-sm font-bold text-[#1C2B3A] mb-3">نوع الحساب:</p>
+                    <p className="text-sm font-bold text-[#1C2B3A] mb-2">نوع الحساب:</p>
                     <div className="grid grid-cols-2 gap-3">
                       <RoleCard 
-                        icon={<UserCircle size={24} />} title="عميل" selected={role === 'client'} 
+                        icon={<UserCircle size={22} />} title="عميل" selected={role === 'client'} 
                         onClick={() => { setRole('client'); setErrors(prev => ({...prev, role: ''})); }} 
                       />
                       <RoleCard 
-                        icon={<Briefcase size={24} />} title="محامي" selected={role === 'lawyer'} 
+                        icon={<Briefcase size={22} />} title="محامي" selected={role === 'lawyer'} 
                         onClick={() => { setRole('lawyer'); setErrors(prev => ({...prev, role: ''})); }} 
                       />
                     </div>
                     {errors.role && <p className="text-[#B03A2E] text-xs font-bold mt-2">{errors.role}</p>}
                   </motion.div>
-
-                  <div className="mt-auto pt-4">
-                    <motion.button 
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleRegister}
-                      disabled={loading}
-                      className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-[#1A3A5C] hover:bg-[#0F2540] disabled:opacity-80"
-                    >
-                      {loading ? (
-                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        "إنشاء الحساب 🎉"
-                      )}
-                    </motion.button>
-                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+
+          <div className="mt-4 shrink-0">
+            {step === 1 ? (
+              <motion.button 
+                whileTap={{ scale: 0.95 }}
+                onClick={handleNext}
+                className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-[#1A3A5C] hover:bg-[#0F2540]"
+              >
+                التالي
+                <ChevronRight size={20} className="rotate-180" />
+              </motion.button>
+            ) : (
+              <motion.button 
+                whileTap={{ scale: 0.95 }}
+                onClick={handleRegister}
+                disabled={loading}
+                className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-[#1A3A5C] hover:bg-[#0F2540] disabled:opacity-80 opacity-90"
+              >
+                {loading ? (
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "إنشاء الحساب 🎉"
+                )}
+              </motion.button>
+            )}
           </div>
         </div>
 
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-          className="mt-8 text-center"
+          className="mt-6 text-center shrink-0 space-y-3"
         >
           <p className="text-sm text-white/80">
             لديك حساب بالفعل؟{' '}
@@ -329,6 +336,14 @@ export default function RegisterScreen() {
               سجل الدخول
             </button>
           </p>
+
+          <button
+            onClick={handleGuestMode}
+            className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold h-12 rounded-[14px] transition-all flex items-center justify-center gap-2 hover:bg-white/20 opacity-90"
+          >
+            <UserCircle size={18} />
+            دخول كضيف
+          </button>
         </motion.div>
       </div>
     </motion.div>

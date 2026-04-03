@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { AlertTriangle, Activity, CheckCircle2, ChevronLeft, ShieldAlert, FileText, Scale, Gavel, Info } from "lucide-react";
+import { AlertTriangle, Activity, CheckCircle2, ChevronLeft, ShieldAlert, FileText, Scale, Gavel, Info, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { useLanguage } from "../lib/i18n";
+import { useGuestRestriction } from "../hooks/useGuestRestriction";
 
 export default function OutcomeSimulator() {
   const { t, language } = useLanguage();
@@ -21,6 +22,7 @@ export default function OutcomeSimulator() {
   const [simulationStep, setSimulationStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [caseCount, setCaseCount] = useState("4,200");
+  const { isGuest, checkRestriction } = useGuestRestriction();
 
   useEffect(() => {
     if (caseType) {
@@ -176,22 +178,24 @@ export default function OutcomeSimulator() {
   };
 
   const handleBooking = () => {
-    let specialty = "";
-    if (caseType.includes("عمالي") || caseType.includes("labor")) specialty = "labor";
-    else if (caseType.includes("أسرة") || caseType.includes("family")) specialty = "family";
-    else if (caseType.includes("مدني") || caseType.includes("civil")) specialty = "civil";
-    else if (caseType.includes("تجاري") || caseType.includes("commercial")) specialty = "commercial";
-    else if (caseType.includes("جنائي") || caseType.includes("criminal")) specialty = "criminal";
+    checkRestriction(() => {
+      let specialty = "";
+      if (caseType.includes("عمالي") || caseType.includes("labor")) specialty = "labor";
+      else if (caseType.includes("أسرة") || caseType.includes("family")) specialty = "family";
+      else if (caseType.includes("مدني") || caseType.includes("civil")) specialty = "civil";
+      else if (caseType.includes("تجاري") || caseType.includes("commercial")) specialty = "commercial";
+      else if (caseType.includes("جنائي") || caseType.includes("criminal")) specialty = "criminal";
 
-    const isUrgent = (result !== null && result < 50) || docsType === 'none';
+      const isUrgent = (result !== null && result < 50) || docsType === 'none';
 
-    navigate("/app/lawyers", {
-      state: {
-        specialty,
-        caseType,
-        isUrgent,
-        description
-      }
+      navigate("/app/lawyers", {
+        state: {
+          specialty,
+          caseType,
+          isUrgent,
+          description
+        }
+      });
     });
   };
 

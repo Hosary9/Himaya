@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, ShieldAlert, Paperclip, MessageSquare, Phone, MessageCircle, PhoneCall, CheckCircle2 } from "lucide-react";
+import { Send, Bot, User, ShieldAlert, Paperclip, MessageSquare, Phone, MessageCircle, PhoneCall, CheckCircle2, Lock } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { useLanguage } from "../lib/i18n";
 import { himayaBot } from "../lib/himayaBot";
 import { db, auth } from "../firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { useGuestRestriction } from "../hooks/useGuestRestriction";
 
 enum OperationType {
   CREATE = 'create',
@@ -84,11 +85,12 @@ export default function AIAssistant() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { isGuest, checkRestriction } = useGuestRestriction();
 
   // Initialize consultation in Firestore
   useEffect(() => {
     const initConsultation = async () => {
-      if (!auth.currentUser) return;
+      if (!auth.currentUser || isGuest) return;
       try {
         const docRef = await addDoc(collection(db, 'consultations'), {
           userId: auth.currentUser.uid,
@@ -126,61 +128,63 @@ export default function AIAssistant() {
   const handleSend = async () => {
     if (!input.trim()) return;
     
-    const newUserMsg: Message = {
-      id: Date.now(),
-      role: 'user',
-      content: input,
-      timestamp: new Date().toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    setMessages(prev => [...prev, newUserMsg]);
-    setInput('');
-    setIsTyping(true);
-
-    // Save user message to Firestore
-    if (consultationId) {
-      try {
-        await updateDoc(doc(db, 'consultations', consultationId), {
-          messages: arrayUnion({
-            role: newUserMsg.role,
-            content: newUserMsg.content,
-            timestamp: newUserMsg.timestamp
-          })
-        });
-      } catch (error) {
-        handleFirestoreError(error, OperationType.UPDATE, `consultations/${consultationId}`);
-      }
-    }
-    
-    setTimeout(async () => {
-      const response = himayaBot(newUserMsg.content);
-      const assistantMsg: Message = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: response.text,
-        action: response.action as any,
-        specialty: response.specialty,
+    checkRestriction(async () => {
+      const newUserMsg: Message = {
+        id: Date.now(),
+        role: 'user',
+        content: input,
         timestamp: new Date().toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
       };
       
-      setMessages(prev => [...prev, assistantMsg]);
-      setIsTyping(false);
+      setMessages(prev => [...prev, newUserMsg]);
+      setInput('');
+      setIsTyping(true);
 
-      // Save assistant response to Firestore
-      if (consultationId) {
+      // Save user message to Firestore
+      if (consultationId && !isGuest) {
         try {
           await updateDoc(doc(db, 'consultations', consultationId), {
             messages: arrayUnion({
-              role: assistantMsg.role,
-              content: assistantMsg.content,
-              timestamp: assistantMsg.timestamp
+              role: newUserMsg.role,
+              content: newUserMsg.content,
+              timestamp: newUserMsg.timestamp
             })
           });
         } catch (error) {
           handleFirestoreError(error, OperationType.UPDATE, `consultations/${consultationId}`);
         }
       }
-    }, 1000);
+      
+      setTimeout(async () => {
+        const response = himayaBot(newUserMsg.content);
+        const assistantMsg: Message = {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: response.text,
+          action: response.action as any,
+          specialty: response.specialty,
+          timestamp: new Date().toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
+        };
+        
+        setMessages(prev => [...prev, assistantMsg]);
+        setIsTyping(false);
+
+        // Save assistant response to Firestore
+        if (consultationId && !isGuest) {
+          try {
+            await updateDoc(doc(db, 'consultations', consultationId), {
+              messages: arrayUnion({
+                role: assistantMsg.role,
+                content: assistantMsg.content,
+                timestamp: assistantMsg.timestamp
+              })
+            });
+          } catch (error) {
+            handleFirestoreError(error, OperationType.UPDATE, `consultations/${consultationId}`);
+          }
+        }
+      }, 1000);
+    });
   };
 
   const handleAction = (action: string, specialty?: string) => {
@@ -308,7 +312,17 @@ export default function AIAssistant() {
       </div>
 
       {/* Input Area */}
-      <div className="pt-4 border-t border-gray-200 shrink-0 bg-background">
+      <div className="pt-4 border-t border-gray-200 shrink-0 bg-background relative">
+        {isGuest && (
+          <div className="absolute inset-0 bg-surface/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-t-2xl">
+            <div className="bg-surface border border-gray-100 shadow-lg rounded-xl px-4 py-2 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+              <Lock size={16} className="text-muted" />
+              <span className="text-sm font-medium text-muted">
+                {language === 'ar' ? 'سجل دخولك لتتمكن من المحادثة' : 'Sign in to start chatting'}
+              </span>
+            </div>
+          </div>
+        )}
         <div className="flex items-center gap-2 bg-surface border border-gray-200 rounded-full p-1 pl-2 pr-4 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
           <button className="p-2 text-muted hover:text-primary transition-colors">
             <Paperclip size={20} />

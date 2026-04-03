@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Mail, Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Shield, Mail, Lock, Eye, EyeOff, CheckCircle2, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import ForgotPasswordSheet from './auth/ForgotPasswordSheet';
 import AnimatedLogo from '../components/AnimatedLogo';
+import { AuthContext } from '../App';
 
 export default function LoginScreen() {
   const navigate = useNavigate();
+  const { setGuest } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,6 +54,11 @@ export default function LoginScreen() {
       }
       setError(message);
     }
+  };
+
+  const handleGuestMode = () => {
+    setGuest(true);
+    navigate('/app', { replace: true });
   };
 
   return (
@@ -221,6 +228,7 @@ export default function LoginScreen() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.3 }}
+              className="space-y-3"
             >
               <motion.button 
                 whileTap={{ scale: 0.95 }}
@@ -245,6 +253,15 @@ export default function LoginScreen() {
                 ) : (
                   "تسجيل الدخول"
                 )}
+              </motion.button>
+
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={handleGuestMode}
+                className="w-full bg-transparent border-2 border-[#E8E0D0] text-[#1A3A5C] font-bold h-14 rounded-[14px] transition-all flex items-center justify-center gap-2 hover:bg-gray-50 opacity-90"
+              >
+                <UserCircle size={20} />
+                دخول كضيف
               </motion.button>
             </motion.div>
           </div>

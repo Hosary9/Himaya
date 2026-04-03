@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { FileText, Download, CheckCircle, Shield, ChevronLeft, ChevronRight, FileSignature, Briefcase, Users } from 'lucide-react';
+import { FileText, Download, CheckCircle, Shield, ChevronLeft, ChevronRight, FileSignature, Briefcase, Users, Lock } from 'lucide-react';
 import { useLanguage } from '../lib/i18n';
 import { cn } from '../lib/utils';
+import { useGuestRestriction } from '../hooks/useGuestRestriction';
 
 export default function ContractDrafting() {
   const { t, language } = useLanguage();
@@ -9,6 +10,7 @@ export default function ContractDrafting() {
   const [contractType, setContractType] = useState('');
   const [formData, setFormData] = useState({ name1: '', name2: '', price: '', date: '' });
   const [isDrafting, setIsDrafting] = useState(false);
+  const { isGuest, checkRestriction } = useGuestRestriction();
 
   const handleTypeSelect = (type: string) => {
     setContractType(type);
@@ -16,12 +18,14 @@ export default function ContractDrafting() {
   };
 
   const handleDraft = () => {
-    setIsDrafting(true);
-    setStep(3);
-    setTimeout(() => {
-      setIsDrafting(false);
-      setStep(4);
-    }, 3000);
+    checkRestriction(() => {
+      setIsDrafting(true);
+      setStep(3);
+      setTimeout(() => {
+        setIsDrafting(false);
+        setStep(4);
+      }, 3000);
+    });
   };
 
   const getContractText = () => {

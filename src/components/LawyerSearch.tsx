@@ -8,7 +8,8 @@ import { collection, getDocs, query, where, onSnapshot } from "firebase/firestor
 import { BookingModal } from './BookingModal';
 import { ServiceSelectionSheet } from './ServiceSelectionSheet';
 import { motion } from 'motion/react';
-import { Scale, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Scale, ArrowRight, ArrowLeft, Search as SearchIcon } from 'lucide-react';
+import { useGuestRestriction } from "../hooks/useGuestRestriction";
 
 enum OperationType {
   CREATE = 'create',
@@ -360,6 +361,7 @@ export default function LawyerSearch() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('match'); // match, rating, price_asc, price_desc
   const [showFilters, setShowFilters] = useState(false);
+  const { isGuest, checkRestriction } = useGuestRestriction();
 
   useEffect(() => {
     const lawyersPath = 'lawyers';
@@ -548,8 +550,10 @@ export default function LawyerSearch() {
               lawyer={lawyer} 
               language={language} 
               onStart={(selected) => {
-                setSelectedLawyerForBooking(selected);
-                setIsServiceSheetOpen(true);
+                checkRestriction(() => {
+                  setSelectedLawyerForBooking(selected);
+                  setIsServiceSheetOpen(true);
+                });
               }}
             />
           ))
@@ -591,15 +595,6 @@ export default function LawyerSearch() {
         }}
       />
     </div>
-  );
-}
-
-function SearchIcon(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"></circle>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-    </svg>
   );
 }
 

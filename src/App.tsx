@@ -30,14 +30,40 @@ import ContractFormScreen from "./screens/contracts/ContractFormScreen";
 import ContractLoadingScreen from "./screens/contracts/ContractLoadingScreen";
 import ContractResultScreen from "./screens/contracts/ContractResultScreen";
 
+// Add AuthContext
+export const AuthContext = React.createContext<{ 
+  user: User | null; 
+  loading: boolean;
+  isGuest: boolean;
+  setGuest: (val: boolean) => void;
+}>({ 
+  user: null, 
+  loading: true, 
+  isGuest: false, 
+  setGuest: () => {} 
+});
+
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [splashFinished, setSplashFinished] = useState(false);
+  const [isGuest, setIsGuest] = useState(() => localStorage.getItem('isGuest') === 'true');
+
+  const setGuest = (val: boolean) => {
+    setIsGuest(val);
+    if (val) {
+      localStorage.setItem('isGuest', 'true');
+    } else {
+      localStorage.removeItem('isGuest');
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        setGuest(false); // Clear guest mode if user logs in
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -48,21 +74,23 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, isGuest, setGuest }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Add AuthContext
-export const AuthContext = React.createContext<{ user: User | null; loading: boolean }>({ user: null, loading: true });
-
 // Add ProtectedRoute component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = React.useContext(AuthContext);
+  const { user, loading, isGuest } = React.useContext(AuthContext);
   if (loading) return <SplashScreen />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user && !isGuest) return <Navigate to="/login" replace />;
   return <>{children}</>;
+}
+
+function HomeSwitcher() {
+  const { isGuest } = React.useContext(AuthContext);
+  return isGuest ? <GuestHomeScreen /> : <ClientHomeScreen />;
 }
 
 function AnimatedRoutes() {
@@ -87,7 +115,7 @@ function AnimatedRoutes() {
         <Route path="/contracts/result" element={<ContractResultScreen />} />
 
         <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<ClientHomeScreen />} />
+          <Route index element={<HomeSwitcher />} />
           <Route path="lawyers" element={<LawyerSearch />} />
           <Route path="ai-assistant" element={<AIAssistant />} />
           <Route path="simulator" element={<OutcomeSimulator />} />
