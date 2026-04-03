@@ -47,8 +47,8 @@ export default function ClientHomeScreen() {
   const mainActions = [
     { 
       id: 'ai', 
-      title: 'استشارة ذكية', 
-      desc: 'تحدث مع مساعدنا القانوني', 
+      title: 'محتاج مساعدة', 
+      desc: 'احصل على مساعدة قانونية فورية', 
       icon: <MessageSquare size={32} />, 
       path: '/app/ai-assistant',
       color: COLORS.primary 

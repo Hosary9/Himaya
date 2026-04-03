@@ -17,7 +17,7 @@ export default function GuestHomeScreen() {
   const features = [
     { 
       id: 'ai', 
-      title: 'المساعد الذكي', 
+      title: 'محتاج مساعده', 
       desc: 'تحدث مع مساعدنا القانوني', 
       icon: <MessageSquare size={32} />, 
       path: '/app/ai-assistant',
