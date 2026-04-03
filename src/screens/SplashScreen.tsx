@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import COLORS from '../theme/colors';
 
-import { auth } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-
-export default function SplashScreen() {
-  const navigate = useNavigate();
+export default function SplashScreen({ onComplete }: { onComplete?: () => void }) {
   const [dots, setDots] = useState([false, false, false]);
   const [isExiting, setIsExiting] = useState(false);
 
@@ -22,14 +17,7 @@ export default function SplashScreen() {
     const exitTimer = setTimeout(() => {
       setIsExiting(true);
       setTimeout(() => {
-        // Check auth state
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            navigate('/dashboard', { replace: true });
-          } else {
-            navigate('/login', { replace: true });
-          }
-        });
+        if (onComplete) onComplete();
       }, 400);
     }, 3200);
 
@@ -37,7 +25,7 @@ export default function SplashScreen() {
       dotTimers.forEach(clearTimeout);
       clearTimeout(exitTimer);
     };
-  }, [navigate]);
+  }, [onComplete]);
 
   return (
     <AnimatePresence>

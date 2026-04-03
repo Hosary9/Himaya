@@ -1,229 +1,274 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Mail, Lock, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2 } from 'lucide-react';
-import COLORS from '../theme/colors';
-import { useLanguage } from '../lib/i18n';
+import { Shield, Mail, Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import ForgotPasswordSheet from './auth/ForgotPasswordSheet';
 
 export default function LoginScreen() {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isForgotSheetOpen, setIsForgotSheetOpen] = useState(false);
+  const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
+  const [shakeKey, setShakeKey] = useState(0); // Used to trigger shake animation
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      setError(language === 'ar' ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور' : 'Please enter email and password');
+      setError('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+      setShakeKey(prev => prev + 1);
       return;
     }
 
     setLoading(true);
     setError(null);
-    setSuccessMsg(null);
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/dashboard', { replace: true });
+      setIsSuccess(true);
+      setTimeout(() => {
+        navigate('/app', { replace: true });
+      }, 1000);
     } catch (err: any) {
       setLoading(false);
+      setShakeKey(prev => prev + 1);
       let message = "حصل خطأ، حاول تاني";
       if (err.code === 'auth/user-not-found') {
-        message = "الإيميل غير مسجل";
-      } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        message = "البريد الإلكتروني غير مسجل";
+      } else if (err.code === 'auth/wrong-password') {
         message = "كلمة المرور غير صحيحة";
-      } else if (err.code === 'auth/invalid-email') {
-        message = "الإيميل غير صحيح";
+      } else if (err.code === 'auth/invalid-credential') {
+        message = "البريد أو كلمة المرور غلط";
+      } else if (err.code === 'auth/too-many-requests') {
+        message = "حاولت كتير، انتظر شوية ☕";
       } else if (err.code === 'auth/network-request-failed') {
-        message = "تأكد من اتصالك بالإنترنت";
+        message = "تأكد من الإنترنت 📶";
       }
       setError(message);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      setError(language === 'ar' ? 'يرجى إدخال البريد الإلكتروني أولاً' : 'Please enter your email first');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setSuccessMsg(null);
-
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setSuccessMsg("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني");
-      setIsForgotPassword(false);
-    } catch (err: any) {
-      let message = "حصل خطأ، حاول تاني";
-      if (err.code === 'auth/user-not-found') {
-        message = "الإيميل غير مسجل";
-      } else if (err.code === 'auth/invalid-email') {
-        message = "الإيميل غير صحيح";
-      }
-      setError(message);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8" style={{ backgroundColor: COLORS.background }}>
-      <div className="max-w-md w-full">
-        <div className="text-center mb-10">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg" style={{ backgroundColor: COLORS.primary }}>
-            <Shield size={40} color="#FFFFFF" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>محامينا</h1>
-          <p className="text-lg" style={{ color: COLORS.muted }}>مساعدك القانوني الذكي</p>
+    <motion.div 
+      animate={{ 
+        background: [
+          'linear-gradient(to bottom, #1A3A5C, #0F2540)',
+          'linear-gradient(to bottom, #0F2540, #1A3A5C)',
+          'linear-gradient(to bottom, #1A3A5C, #0F2540)'
+        ] 
+      }}
+      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+      className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden"
+      dir="rtl"
+    >
+      <AnimatePresence>
+        {isSuccess && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            className="absolute inset-0 bg-white z-50" 
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="max-w-md w-full z-10">
+        {/* Top Section */}
+        <div className="text-center mb-10 flex flex-col items-center">
+          <motion.div
+            layoutId="hero-shield"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", bounce: 0.6, duration: 0.8 }}
+            className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-2xl bg-[#1A3A5C] border-2 border-[#C9A84C]/30"
+          >
+            <Shield size={40} color="#C9A84C" />
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="text-4xl font-bold mb-3 text-white tracking-tight"
+          >
+            محامينا
+          </motion.h1>
+          
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: 80 }}
+            transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+            className="h-1 bg-[#C9A84C] rounded-full mb-3"
+          />
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="text-lg text-[#E8E0D0]/80"
+          >
+            مساعدك القانوني الذكي
+          </motion.p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-sm border" style={{ borderColor: COLORS.border }}>
-          <div className="space-y-6">
-            {error && (
-              <div className="bg-emergency/10 p-3 rounded-xl flex items-center gap-2 text-emergency text-sm font-bold">
-                <AlertCircle size={18} />
-                <span>{error}</span>
-              </div>
-            )}
-            
-            {successMsg && (
-              <div className="bg-success/10 p-3 rounded-xl flex items-center gap-2 text-success text-sm font-bold" style={{ color: COLORS.success, backgroundColor: `${COLORS.success}1A` }}>
-                <CheckCircle2 size={18} />
-                <span>{successMsg}</span>
-              </div>
-            )}
+        {/* Form Card */}
+        <motion.div 
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.8, duration: 0.6, type: "spring", bounce: 0.2 }}
+          className="bg-white/95 backdrop-blur-xl p-8 rounded-[24px] shadow-[0_8px_32px_rgba(26,58,92,0.2)] border border-white/20"
+        >
+          <div className="space-y-5">
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-[#B03A2E]/15 border border-[#B03A2E] text-[#B03A2E] p-3 rounded-xl flex items-center gap-2 text-sm font-bold overflow-hidden"
+                >
+                  <span>⚠️</span>
+                  <span>{error}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: COLORS.text }}>{t('login.email')}</label>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={error ? { x: [-10, 10, -10, 10, 0] } : { opacity: 1, x: 0 }}
+              transition={{ delay: 0.9 }}
+              key={`email-${shakeKey}`}
+            >
               <div className="relative">
-                <Mail className="absolute top-1/2 -translate-y-1/2 right-4" size={20} style={{ color: COLORS.muted }} />
-                <input 
+                <Mail className="absolute top-1/2 -translate-y-1/2 right-4 text-[#6B7C8D]" size={20} />
+                <motion.input 
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('login.email.placeholder')}
-                  className="w-full bg-transparent border rounded-xl py-4 pr-12 pl-4 focus:outline-none focus:ring-2 text-left dir-ltr"
-                  style={{ borderColor: COLORS.border, color: COLORS.text }}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="البريد الإلكتروني"
+                  animate={{ 
+                    borderColor: focusedField === 'email' ? '#C9A84C' : '#E8E0D0',
+                    boxShadow: focusedField === 'email' ? '0 0 0 2px rgba(201,168,76,0.2)' : 'none'
+                  }}
+                  className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-4 outline-none text-left dir-ltr text-[#1C2B3A] transition-colors"
                 />
               </div>
-            </div>
+            </motion.div>
             
-            {!isForgotPassword && (
-              <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: COLORS.text }}>{t('login.password')}</label>
-                <div className="relative">
-                  <Lock className="absolute top-1/2 -translate-y-1/2 right-4" size={20} style={{ color: COLORS.muted }} />
-                  <input 
-                    type="password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t('login.password.placeholder')}
-                    className="w-full bg-transparent border rounded-xl py-4 pr-12 pl-4 focus:outline-none focus:ring-2 text-left dir-ltr"
-                    style={{ borderColor: COLORS.border, color: COLORS.text }}
-                  />
-                </div>
-                <div className="flex justify-end mt-2">
-                  <button 
-                    onClick={() => {
-                      setIsForgotPassword(true);
-                      setError(null);
-                      setSuccessMsg(null);
-                    }}
-                    className="text-sm font-bold transition-opacity hover:opacity-80"
-                    style={{ color: COLORS.primary }}
-                  >
-                    نسيت كلمة المرور؟
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {isForgotPassword ? (
-              <div className="flex flex-col gap-3">
-                <button 
-                  onClick={handleForgotPassword}
-                  disabled={loading}
-                  className="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-all hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50"
-                  style={{ backgroundColor: COLORS.primary }}
-                >
-                  {loading ? (
-                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    "إرسال رابط إعادة التعيين"
-                  )}
-                </button>
-                <button 
-                  onClick={() => {
-                    setIsForgotPassword(false);
-                    setError(null);
-                    setSuccessMsg(null);
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={error ? { x: [-10, 10, -10, 10, 0] } : { opacity: 1, x: 0 }}
+              transition={{ delay: 1.1 }}
+              key={`pass-${shakeKey}`}
+            >
+              <div className="relative">
+                <Lock className="absolute top-1/2 -translate-y-1/2 right-4 text-[#6B7C8D]" size={20} />
+                <motion.input 
+                  type={showPassword ? "text" : "password"} 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="كلمة المرور"
+                  animate={{ 
+                    borderColor: focusedField === 'password' ? '#C9A84C' : '#E8E0D0',
+                    boxShadow: focusedField === 'password' ? '0 0 0 2px rgba(201,168,76,0.2)' : 'none'
                   }}
-                  className="w-full font-bold py-4 rounded-xl transition-all hover:bg-gray-50 flex items-center justify-center"
-                  style={{ color: COLORS.muted }}
+                  className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-12 outline-none text-left dir-ltr text-[#1C2B3A] transition-colors"
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-1/2 -translate-y-1/2 left-4 text-[#6B7C8D] hover:text-[#1A3A5C] transition-colors"
                 >
-                  العودة لتسجيل الدخول
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={showPassword ? "eye" : "eyeOff"}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                    </motion.div>
+                  </AnimatePresence>
                 </button>
               </div>
-            ) : (
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+              className="flex justify-end"
+            >
               <button 
+                onClick={() => setIsForgotSheetOpen(true)}
+                className="text-sm font-bold text-[#C9A84C] hover:text-[#1A3A5C] transition-colors"
+              >
+                نسيت كلمة المرور؟
+              </button>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.3 }}
+            >
+              <motion.button 
+                whileTap={{ scale: 0.95 }}
                 onClick={handleLogin}
-                disabled={loading}
-                className="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-all hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: COLORS.primary }}
+                disabled={loading || isSuccess}
+                animate={{ 
+                  backgroundColor: isSuccess ? '#2D6A4F' : '#1A3A5C',
+                  scale: isSuccess ? [1, 0.95, 1.05, 1] : 1
+                }}
+                className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-80 relative overflow-hidden"
               >
                 {loading ? (
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : isSuccess ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", bounce: 0.6 }}
+                  >
+                    <CheckCircle2 size={24} />
+                  </motion.div>
                 ) : (
-                  <>
-                    {t('login.verify')}
-                    {language === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
-                  </>
+                  "تسجيل الدخول"
                 )}
-              </button>
-            )}
-
-            {!isForgotPassword && (
-              <>
-                <div className="flex items-center gap-4 my-4">
-                  <div className="flex-1 h-[1px] bg-border" style={{ backgroundColor: COLORS.border }} />
-                  <span className="text-sm text-muted" style={{ color: COLORS.muted }}>أو</span>
-                  <div className="flex-1 h-[1px] bg-border" style={{ backgroundColor: COLORS.border }} />
-                </div>
-
-                <button 
-                  onClick={() => navigate('/guest-home', { replace: true })}
-                  className="w-full font-bold py-4 rounded-[14px] border transition-all hover:bg-gray-50 flex items-center justify-center gap-2"
-                  style={{ 
-                    backgroundColor: 'transparent', 
-                    borderColor: COLORS.border, 
-                    color: COLORS.muted,
-                    height: '52px'
-                  }}
-                >
-                  <span>👁️ تصفح كضيف بدون تسجيل</span>
-                </button>
-              </>
-            )}
+              </motion.button>
+            </motion.div>
           </div>
+        </motion.div>
 
-          {!isForgotPassword && (
-            <div className="mt-8 text-center">
-              <p className="text-sm" style={{ color: COLORS.muted }}>
-                ليس لديك حساب؟{' '}
-                <button onClick={() => navigate('/register')} className="font-bold" style={{ color: COLORS.primary }}>
-                  سجل الآن
-                </button>
-              </p>
-            </div>
-          )}
-        </div>
+        {/* Bottom Section */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="mt-8 text-center"
+        >
+          <p className="text-sm text-white/80">
+            مش عندك حساب؟{' '}
+            <button onClick={() => navigate('/register')} className="font-bold text-[#C9A84C] hover:text-white transition-colors">
+              سجّل دلوقتي
+            </button>
+          </p>
+        </motion.div>
       </div>
-    </div>
+
+      <ForgotPasswordSheet 
+        isOpen={isForgotSheetOpen} 
+        onClose={() => setIsForgotSheetOpen(false)} 
+      />
+    </motion.div>
   );
 }
