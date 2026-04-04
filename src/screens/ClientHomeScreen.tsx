@@ -21,6 +21,7 @@ import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import AnimatedLogo from '../components/AnimatedLogo';
+import LawyerVerification from '../components/LawyerVerification';
 
 function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -44,21 +45,26 @@ export default function ClientHomeScreen() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [userName, setUserName] = useState('');
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   useEffect(() => {
     const fetchUserData = async () => {
       if (auth.currentUser) {
         if (auth.currentUser.displayName) {
           setUserName(auth.currentUser.displayName);
-        } else {
-          try {
-            const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-            if (userDoc.exists() && userDoc.data().name) {
+        }
+        try {
+          const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+          if (userDoc.exists()) {
+            if (userDoc.data().name && !auth.currentUser.displayName) {
               setUserName(userDoc.data().name);
             }
-          } catch (error) {
-            console.error("Error fetching user data:", error);
+            if (userDoc.data().role) {
+              setUserRole(userDoc.data().role);
+            }
           }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
       }
     };
@@ -222,6 +228,13 @@ export default function ClientHomeScreen() {
             ))}
           </div>
         </section>
+
+        {/* Lawyer Verification Section */}
+        {userRole === 'lawyer' && (
+          <section className="bg-white p-6 rounded-3xl shadow-sm border" style={{ borderColor: COLORS.border }}>
+            <LawyerVerification />
+          </section>
+        )}
 
         {/* Emergency Section */}
         <section className="bg-white p-6 rounded-3xl border-2 border-dashed flex items-center justify-between" style={{ borderColor: COLORS.emergency }}>
