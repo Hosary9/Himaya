@@ -16,6 +16,7 @@ import OutcomeSimulator from "./components/OutcomeSimulator";
 import KnowYourRights from "./components/KnowYourRights";
 import ContractDrafting from "./components/ContractDrafting";
 import MyCases from "./components/MyCases";
+import SettingsScreen from "./screens/SettingsScreen";
 import { LanguageProvider } from "./lib/i18n";
 import AdminPortal from "./components/AdminPortal";
 import SplashScreen from "./screens/SplashScreen";
@@ -122,6 +123,7 @@ function AnimatedRoutes() {
           <Route path="rights" element={<KnowYourRights />} />
           <Route path="contracts" element={<ContractDrafting />} />
           <Route path="cases" element={<MyCases />} />
+          <Route path="settings" element={<SettingsScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -11,19 +11,40 @@ import {
   Bell,
   Menu,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Settings,
+  X
 } from 'lucide-react';
 import COLORS from '../theme/colors';
 import { useLanguage } from '../lib/i18n';
 import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'motion/react';
 import AnimatedLogo from '../components/AnimatedLogo';
+
+function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">{title}</h3>
+      <div className="space-y-2">{children}</div>
+    </section>
+  );
+}
+
+function SettingsItem({ label }: { label: string }) {
+  return (
+    <button className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+      <span className="font-medium text-gray-800">{label}</span>
+      <ChevronLeft size={20} className="text-gray-400" />
+    </button>
+  );
+}
 
 export default function ClientHomeScreen() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [userName, setUserName] = useState('');
-
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   useEffect(() => {
     const fetchUserData = async () => {
       if (auth.currentUser) {
@@ -81,20 +102,79 @@ export default function ClientHomeScreen() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.background }}>
       {/* Header */}
       <header className="bg-white px-6 py-4 flex items-center justify-between shadow-sm border-b" style={{ borderColor: COLORS.border }}>
-        <div className="flex items-center gap-3">
-          <AnimatedLogo size={40} />
-          <h1 className="text-xl font-bold" style={{ color: COLORS.primary }}>محامينا</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-full bg-gray-50 relative" style={{ color: COLORS.muted }}>
-            <Bell size={24} />
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-warning rounded-full border-2 border-white"></span>
-          </button>
+        {/* Left Side: Menu icon only */}
+        <div className="flex items-center gap-2">
           <button className="p-2 rounded-full bg-gray-50" style={{ color: COLORS.muted }}>
             <Menu size={24} />
           </button>
         </div>
+
+        {/* Right Side: Notification icon, Settings icon, Logo */}
+        <div className="flex items-center gap-3">
+          <button className="p-2 rounded-full bg-gray-50 relative" style={{ color: COLORS.muted }}>
+            <Bell size={24} />
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-warning rounded-full border-2 border-white"></span>
+          </button>
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 rounded-full bg-gray-50" 
+            style={{ color: COLORS.muted }}
+          >
+            <Settings size={24} />
+          </button>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold" style={{ color: COLORS.primary }}>محامينا</h1>
+            <AnimatedLogo size={40} />
+          </div>
+        </div>
       </header>
+
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-50 bg-white shadow-2xl p-6 overflow-y-auto"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold">Settings</h2>
+              <button onClick={() => setIsSettingsOpen(false)}><X size={24} /></button>
+            </div>
+            
+            <div className="space-y-8">
+              <SettingsSection title="Account Settings">
+                <SettingsItem label="Edit profile" />
+                <SettingsItem label="Change password" />
+                <SettingsItem label="Update phone" />
+              </SettingsSection>
+              
+              <SettingsSection title="App Settings">
+                <SettingsItem label="Language switch (Arabic / English)" />
+                <SettingsItem label="Dark mode toggle" />
+              </SettingsSection>
+
+              <SettingsSection title="Notifications">
+                <SettingsItem label="Enable/Disable notifications" />
+                <SettingsItem label="Case updates" />
+                <SettingsItem label="Lawyer messages" />
+              </SettingsSection>
+
+              <SettingsSection title="Support">
+                <SettingsItem label="Help center" />
+                <SettingsItem label="Contact support" />
+                <SettingsItem label="Report issue" />
+              </SettingsSection>
+
+              <SettingsSection title="Security">
+                <SettingsItem label="Logout" />
+                <SettingsItem label="Delete account" />
+              </SettingsSection>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main className="flex-1 p-6 space-y-8 max-w-4xl mx-auto w-full">
         {/* Welcome Section */}

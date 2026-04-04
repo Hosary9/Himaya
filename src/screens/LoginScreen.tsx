@@ -147,7 +147,7 @@ export default function LoginScreen() {
 
             <motion.div
               initial={{ opacity: 0, x: -20 }}
-              animate={error ? { x: [-10, 10, -10, 10, 0] } : { opacity: 1, x: 0 }}
+              animate={error ? { opacity: 1, x: [-10, 10, -10, 10, 0] } : { opacity: 1, x: 0 }}
               transition={{ delay: 0.9 }}
               key={`email-${shakeKey}`}
             >
@@ -171,7 +171,7 @@ export default function LoginScreen() {
             
             <motion.div
               initial={{ opacity: 0, x: -20 }}
-              animate={error ? { x: [-10, 10, -10, 10, 0] } : { opacity: 1, x: 0 }}
+              animate={error ? { opacity: 1, x: [-10, 10, -10, 10, 0] } : { opacity: 1, x: 0 }}
               transition={{ delay: 1.1 }}
               key={`pass-${shakeKey}`}
             >

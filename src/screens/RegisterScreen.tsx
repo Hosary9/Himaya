@@ -28,6 +28,55 @@ export default function RegisterScreen() {
   const [shakeKey, setShakeKey] = useState(0);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  // Terms State
+  const [termsRead, setTermsRead] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [timer, setTimer] = useState(10);
+  const [timerDone, setTimerDone] = useState(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (showTermsModal && !timerDone) {
+      interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setTimerDone(true);
+            setTermsRead(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [showTermsModal, timerDone]);
+
+  const openTerms = () => {
+    setShowTermsModal(true);
+    if (!termsRead) {
+      setTimerDone(false);
+      setTimer(10);
+    } else {
+      setTimerDone(true);
+    }
+  };
+
+  const acceptTerms = () => {
+    setTermsAccepted(true);
+    setShowTermsModal(false);
+  };
+
+  const onCheckboxClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!termsRead) {
+      alert('اقرأ القواعد الأول من اللينك 👆');
+      return;
+    }
+    setTermsAccepted(!termsAccepted);
+  };
+
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     if (name.length < 3) newErrors.name = 'الاسم يجب أن يكون 3 أحرف على الأقل';
@@ -294,6 +343,36 @@ export default function RegisterScreen() {
                     </div>
                     {errors.role && <p className="text-[#B03A2E] text-xs font-bold mt-2">{errors.role}</p>}
                   </motion.div>
+
+                  {/* TERMS CHECKBOX ROW */}
+                  <motion.div 
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+                    className="flex items-center gap-2 mt-2 mb-1" dir="rtl"
+                  >
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={termsAccepted}
+                      onChange={(e) => {
+                        if (!termsRead) {
+                          openTerms();
+                          return;
+                        }
+                        setTermsAccepted(e.target.checked);
+                      }}
+                      className="w-4 h-4 accent-[#1A3A5C] cursor-pointer"
+                    />
+                    <label htmlFor="terms" className="text-sm text-[#1C2B3A]">
+                      أوافق على
+                      <button
+                        type="button"
+                        onClick={openTerms}
+                        className="text-[#C9A84C] underline font-bold mr-1"
+                      >
+                        قواعد المنصة وشروط الاستخدام
+                      </button>
+                    </label>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -313,8 +392,8 @@ export default function RegisterScreen() {
               <motion.button 
                 whileTap={{ scale: 0.95 }}
                 onClick={handleRegister}
-                disabled={loading}
-                className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-[#1A3A5C] hover:bg-[#0F2540] disabled:opacity-80 opacity-90"
+                disabled={loading || !termsAccepted}
+                className={`w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-80 opacity-90 ${termsAccepted ? 'bg-[#1A3A5C] hover:bg-[#0F2540]' : 'bg-gray-400 cursor-not-allowed'}`}
               >
                 {loading ? (
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -346,6 +425,76 @@ export default function RegisterScreen() {
           </button>
         </motion.div>
       </div>
+
+      {/* TERMS MODAL */}
+      <AnimatePresence>
+        {showTermsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="bg-white w-full max-w-md rounded-t-[24px] p-6 flex flex-col"
+              style={{ maxHeight: '80vh' }}
+              dir="rtl"
+            >
+              {/* Modal Header */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-bold text-[#1A3A5C]">
+                  قواعد المنصة ⚖️
+                </h2>
+                <button
+                  onClick={() => setShowTermsModal(false)}
+                  className="text-[#6B7C8D] text-xl font-bold w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
+                >✕</button>
+              </div>
+
+              {/* Rules Text */}
+              <div className="overflow-y-auto flex-1 text-sm text-[#1C2B3A] leading-relaxed mb-4 custom-scrollbar pr-2">
+                <p className="text-center font-bold text-[#C9A84C] mb-3 text-base">
+                  ﴿ لَا تَأْكُلُوا أَمْوَالَكُم بَيْنَكُم بِالْبَاطِلِ
+                  إِلَّا أَن تَكُونَ تِجَارَةً عَن تَرَاضٍ مِّنكُمْ ﴾
+                </p>
+                <p className="text-xs text-center text-[#6B7C8D] mb-4">
+                  سورة النساء: ٢٩
+                </p>
+                <p className="mb-2">• الدفع المسبق شرط لبدء أي خدمة</p>
+                <p className="mb-2">• قدم معلومات صحيحة عن قضيتك</p>
+                <p className="mb-2">• احترم المحامي في كل التواصل</p>
+                <p className="mb-2">• لو هتتأخر عن موعد إشعر المحامي مسبقاً</p>
+                <p className="mb-2">• التقييم حقك لكن لازم يكون صادق</p>
+                <p className="mb-2">• ممنوع شكاوى كيدية للإضرار بالمحامي</p>
+                <p className="mb-2">• ممنوع فتح نزاع بعد استلام الخدمة كاملة</p>
+                <p className="mb-2">• ممنوع مشاركة بيانات المحامي خارج المنصة</p>
+              </div>
+
+              {/* Timer */}
+              {!timerDone && (
+                <div className="text-center py-3 font-bold text-[#6B7C8D]">
+                  ⏳ هتقدر توافق بعد {timer} ثواني
+                </div>
+              )}
+
+              {/* Accept Button */}
+              {timerDone && (
+                <button
+                  onClick={acceptTerms}
+                  className="w-full font-bold py-3 rounded-xl text-white transition-all bg-[#1A3A5C] hover:bg-[#0F2540]"
+                >
+                  قرأت وموافق ✅
+                </button>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -373,7 +522,7 @@ function InputField({ icon, placeholder, value, onChange, error, shakeKey, delay
             borderColor: error ? '#B03A2E' : focused ? '#C9A84C' : '#E8E0D0',
             boxShadow: focused && !error ? '0 0 0 2px rgba(201,168,76,0.2)' : error ? '0 0 0 2px rgba(176,58,46,0.2)' : 'none'
           }}
-          className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-4 outline-none text-left dir-ltr text-[#1C2B3A] transition-colors"
+          className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-4 outline-none text-right text-[#1C2B3A] transition-colors"
         />
       </div>
       {error && <p className="text-[#B03A2E] text-xs font-bold mt-1 px-1">{error}</p>}

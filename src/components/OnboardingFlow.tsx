@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, ChevronLeft, ChevronRight, User, Briefcase, Phone, Lock } from 'lucide-react';
 import { useLanguage } from '../lib/i18n';
 import { cn } from '../lib/utils';
+import { RulesBottomSheet } from './RulesBottomSheet';
 
 export default function OnboardingFlow() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [step, setStep] = useState<'splash' | 'swiper' | 'role' | 'login'>('splash');
   const [slide, setSlide] = useState(0);
+  const [role, setRole] = useState<'lawyer' | 'client' | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isRulesSheetOpen, setIsRulesSheetOpen] = useState(false);
 
   useEffect(() => {
     if (step === 'splash') {
@@ -80,7 +84,7 @@ export default function OnboardingFlow() {
           <h2 className="text-3xl font-bold text-text mb-8 text-center">{t('role.title')}</h2>
           
           <div className="space-y-4">
-            <button onClick={() => setStep('login')} className="w-full bg-surface p-6 rounded-2xl border-2 border-transparent hover:border-primary transition-all shadow-sm flex items-center gap-6 text-right group">
+            <button onClick={() => { setRole('client'); setStep('login'); }} className="w-full bg-surface p-6 rounded-2xl border-2 border-transparent hover:border-primary transition-all shadow-sm flex items-center gap-6 text-right group">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                 <User size={32} className="text-primary" />
               </div>
@@ -90,7 +94,7 @@ export default function OnboardingFlow() {
               </div>
             </button>
             
-            <button onClick={() => setStep('login')} className="w-full bg-surface p-6 rounded-2xl border-2 border-transparent hover:border-primary transition-all shadow-sm flex items-center gap-6 text-right group">
+            <button onClick={() => { setRole('lawyer'); setStep('login'); }} className="w-full bg-surface p-6 rounded-2xl border-2 border-transparent hover:border-primary transition-all shadow-sm flex items-center gap-6 text-right group">
               <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                 <Briefcase size={32} className="text-secondary" />
               </div>
@@ -122,7 +126,7 @@ export default function OnboardingFlow() {
                 <input 
                   type="tel" 
                   placeholder={t('login.phone.placeholder')}
-                  className="w-full bg-background border border-gray-200 rounded-xl py-4 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-left dir-ltr"
+                  className="w-full bg-background border border-gray-200 rounded-xl py-4 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-right"
                 />
               </div>
             </div>
@@ -139,11 +143,111 @@ export default function OnboardingFlow() {
               </div>
             </div>
             
-            <button onClick={() => navigate('/app')} className="w-full bg-primary text-surface font-bold py-4 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors">
-              {t('login.verify')}
+            <div className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                checked={termsAccepted} 
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="w-5 h-5 accent-accent rounded border-gray-300"
+              />
+              <span className="text-sm text-text">
+                {language === 'ar' ? 'أوافق على ' : 'I agree to '}
+                <button 
+                  onClick={() => setIsRulesSheetOpen(true)}
+                  className="text-accent font-bold underline"
+                >
+                  {role === 'lawyer' ? (language === 'ar' ? 'قواعد المحامين وشروط التوثيق' : 'Lawyer Rules & Verification Terms') : (language === 'ar' ? 'قواعد المنصة وشروط الاستخدام' : 'Platform Rules & Terms of Use')}
+                </button>
+              </span>
+            </div>
+            
+            <button 
+              disabled={!termsAccepted}
+              onClick={() => navigate('/app')} 
+              className={cn(
+                "w-full font-bold py-4 rounded-xl shadow-lg transition-colors",
+                termsAccepted ? "bg-primary text-surface shadow-primary/20 hover:bg-primary/90" : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              )}
+            >
+              🎉 {t('login.verify')}
             </button>
           </div>
         </div>
+        
+        <RulesBottomSheet
+          isOpen={isRulesSheetOpen}
+          onClose={() => setIsRulesSheetOpen(false)}
+          title={role === 'lawyer' ? 'قواعد المحامين' : 'قواعد العميل'}
+          timerSeconds={role === 'lawyer' ? 30 : 10}
+          onAccept={() => setTermsAccepted(true)}
+          rules={role === 'lawyer' ? 
+            <div className="text-right space-y-4" dir="rtl">
+              <h2 className="text-center font-bold text-lg">﷽</h2>
+              <h2 className="text-center font-bold text-lg">قواعد المحامي على منصة محامينا ⚖️</h2>
+              <p className="text-center text-xs text-gray-500">﴿ يَا أَيُّهَا الَّذِينَ آمَنُوا لَا تَأْكُلُوا أَمْوَالَكُم بَيْنَكُم بِالْبَاطِلِ إِلَّا أَن تَكُونَ تِجَارَةً عَن تَرَاضٍ مِّنكُمْ ﴾ — سورة النساء: ٢٩</p>
+              
+              <h3 className="font-bold">قبل التسجيل:</h3>
+              <ul className="list-disc pr-4 space-y-1">
+                <li>التحقق من رخصة النقابة والهوية شرط أساسي</li>
+                <li>الملف الشخصي لازم يكون حقيقي ودقيق</li>
+                <li>تحديد تخصصاتك بدقة — ممنوع قبول قضايا خارج تخصصك</li>
+                <li>الصورة الشخصية لازم تكون حقيقية وواضحة</li>
+                <li>ممنوع نسخ ملف محامٍ آخر</li>
+              </ul>
+
+              <h3 className="font-bold">أثناء تقديم الخدمة:</h3>
+              <ul className="list-disc pr-4 space-y-1">
+                <li>الرد خلال 24 ساعة على أي حجز مؤكد</li>
+                <li>الالتزام بالمواعيد — تأخير أكتر من 10 دقائق = إشعار العميل فوراً</li>
+                <li>التسعير واضح من الأول — ممنوع رسوم مفاجئة</li>
+                <li>ممنوع طلب دفع خارج المنصة بأي طريقة</li>
+                <li>ممنوع استدراج العميل للتواصل خارج المنصة قبل الحجز</li>
+                <li>لو مش هتكمل الخدمة — إشعار فوري وإعادة المبلغ كاملاً</li>
+              </ul>
+
+              <h3 className="font-bold">السرية والأمانة:</h3>
+              <ul className="list-disc pr-4 space-y-1">
+                <li>السرية التامة لبيانات العميل وقضيته</li>
+                <li>ممنوع نشر أي تفاصيل عن القضية حتى بعد انتهائها</li>
+                <li>ممنوع استخدام بيانات العميل لأي غرض تاني</li>
+              </ul>
+
+              <h3 className="font-bold">نظام العقوبات:</h3>
+              <ul className="list-disc pr-4 space-y-1">
+                <li>مخالفة أولى: تحذير ودي</li>
+                <li>مخالفة ثانية: تقييد 7 أيام</li>
+                <li>مخالفة ثالثة: تعليق 30 يوم + حق استئناف</li>
+                <li>مخالفة رابعة: حظر دائم</li>
+                <li>حظر فوري في: الدفع خارج المنصة، التهديد، الابتزاز، انتحال الشخصية، العودة بحساب جديد بعد الحظر</li>
+              </ul>
+            </div> : 
+            <div className="text-right space-y-4" dir="rtl">
+              <h2 className="text-center font-bold text-lg">قواعد العميل على منصة محامينا ⚖️</h2>
+              
+              <h3 className="font-bold">قبل الحجز:</h3>
+              <ul className="list-disc pr-4 space-y-1">
+                <li>اقرأ وصف الخدمة كاملاً قبل الحجز</li>
+                <li>اختار المحامي المناسب لتخصص قضيتك</li>
+                <li>ممنوع التواصل مع أكتر من محامٍ بنفس الوقت بقصد الحصول على معلومات مجانية</li>
+              </ul>
+
+              <h3 className="font-bold">أثناء الخدمة:</h3>
+              <ul className="list-disc pr-4 space-y-1">
+                <li>الدفع المسبق شرط لبدء أي خدمة</li>
+                <li>قدم معلومات صحيحة عن قضيتك — المعلومات الناقصة بتأثر على النتيجة</li>
+                <li>احترم المحامي في كل التواصل</li>
+                <li>لو هتتأخر أو هتغيب — إشعر المحامي مسبقاً</li>
+              </ul>
+
+              <h3 className="font-bold">بعد الخدمة:</h3>
+              <ul className="list-disc pr-4 space-y-1">
+                <li>التقييم حقك — بس لازم يكون صادق وحقيقي</li>
+                <li>ممنوع شكاوى كيدية للإضرار بسمعة المحامي</li>
+                <li>ممنوع فتح نزاع بعد استلام الخدمة كاملة</li>
+              </ul>
+            </div>
+          }
+        />
       </div>
     );
   }

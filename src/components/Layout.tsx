@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Home, Search, Bot, BookOpen, AlertTriangle, Globe, FileSignature, Briefcase, LogIn, X, AlertCircle } from "lucide-react";
+import { Home, Search, Bot, BookOpen, AlertTriangle, Globe, FileSignature, Briefcase, LogIn, X, AlertCircle, Settings } from "lucide-react";
 import { cn } from "../lib/utils";
 import { ReactNode, useEffect, useState, useContext } from "react";
 import { useLanguage } from "../lib/i18n";
@@ -92,6 +92,7 @@ export default function Layout() {
           <NavItem to="/app/contracts" icon={<FileSignature size={20} />} label={t('nav.contracts')} />
           <NavItem to="/app/rights" icon={<BookOpen size={20} />} label={t('nav.rights')} />
           <NavItem to="/app/cases" icon={<Briefcase size={20} />} label={t('nav.cases')} />
+          <NavItem to="/app/settings" icon={<Settings size={20} />} label={t('nav.settings')} />
         </nav>
 
         <div className="mt-auto pt-4 border-t border-border">

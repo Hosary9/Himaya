@@ -102,7 +102,7 @@ const MOCK_LAWYERS = [
     matchScore: 85,
     consultationPrice: 200,
     casePriceRange: "10,000 - 200,000",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop",
+    image: "https://g.top4top.io/p_3746xb8pv1.jpg",
     isExpatSpecialist: true
   },
   {
@@ -144,7 +144,7 @@ const MOCK_LAWYERS = [
     matchScore: 95,
     consultationPrice: 100,
     casePriceRange: "3,000 - 30,000",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop",
+    image: "https://h.top4top.io/p_3746ahzwh2.jpg",
     isExpatSpecialist: false
   },
   {
@@ -186,7 +186,7 @@ const MOCK_LAWYERS = [
     matchScore: 92,
     consultationPrice: 180,
     casePriceRange: "10,000 - 150,000",
-    image: "https://images.unsplash.com/photo-1567532939604-b6c5b0ad2e01?w=150&h=150&fit=crop",
+    image: "https://i.top4top.io/p_37461ubu33.jpg",
     isExpatSpecialist: true
   },
   {
@@ -228,7 +228,7 @@ const MOCK_LAWYERS = [
     matchScore: 89,
     consultationPrice: 130,
     casePriceRange: "4,000 - 60,000",
-    image: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=150&h=150&fit=crop",
+    image: "https://j.top4top.io/p_3746co2cx4.jpg",
     isExpatSpecialist: true
   },
   {
@@ -270,7 +270,7 @@ const MOCK_LAWYERS = [
     matchScore: 87,
     consultationPrice: 90,
     casePriceRange: "3,000 - 40,000",
-    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop",
+    image: "https://i.pinimg.com/736x/4c/c3/fa/4cc3fa4ac99c355a1a6fa471cfb3286a.jpg",
     isExpatSpecialist: false
   },
   {
@@ -312,7 +312,7 @@ const MOCK_LAWYERS = [
     matchScore: 84,
     consultationPrice: 140,
     casePriceRange: "10,000 - 120,000",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
+    image: "https://d.top4top.io/p_374654gto1.jpg",
     isExpatSpecialist: false
   },
   {
@@ -333,8 +333,32 @@ const MOCK_LAWYERS = [
     matchScore: 99,
     consultationPrice: 50000,
     casePriceRange: "500,000 - 3,000,000",
-    image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=150&h=150&fit=crop",
+    image: "https://b.top4top.io/p_3746ainkg1.jpg",
     isExpatSpecialist: true
+  },
+  {
+    id: 14,
+    name: "أ. عصام فيصل",
+    nameEn: "Mr. Essam Faisal",
+    specialty: "criminal",
+    specialtyLabel: "جنح، مدني، أسرة",
+    specialtyLabelEn: "Criminal, Civil & Family",
+    location: "سوهاج - مركز طما",
+    locationEn: "Sohag - Tama Center",
+    governorate: "sohag",
+    rating: 5.0,
+    reviews: 30000,
+    experience: "28 سنة",
+    experienceEn: "28 years",
+    availability: "now",
+    matchScore: 100,
+    consultationPrice: 500,
+    casePriceRange: "حسب الاتفاق",
+    image: "https://h.top4top.io/p_3746vxvh21.jpeg",
+    isExpatSpecialist: false,
+    isCertified: true,
+    description: "محامي بالنقض بخبرة 28 سنة في مجال المحاماة. متخصص في قضايا الجنح والمدني والأسرة. قام بالترافع في أكثر من 30 ألف قضية أمام مختلف درجات التقاضي. يقدم استشارات قانونية دقيقة ومتابعة احترافية للقضايا.",
+    badges: ["محامي بالنقض", "28 سنة خبرة", "30 ألف قضية", "سوهاج - طما"]
   }
 ];
 
@@ -622,14 +646,19 @@ function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS
           🌍 {language === 'ar' ? 'دعم المغتربين' : 'Expat Support'}
         </div>
       )}
+      {lawyer.isCertified && (
+        <div className={cn("absolute top-0 bg-success text-surface text-[10px] font-bold px-3 py-1 rounded-bl-xl flex items-center gap-1 z-10", language === 'ar' ? "left-0" : "right-0")}>
+          <ShieldCheck size={10} /> {language === 'ar' ? 'محامي معتمد' : 'Certified Lawyer'}
+        </div>
+      )}
       
-      <div className="flex gap-4 mt-2">
+      <div className="flex gap-4 mt-6">
         {/* Avatar & Availability */}
         <div className="relative shrink-0">
           <img 
             src={lawyer.image} 
             alt={lawyer.name} 
-            className="w-16 h-16 rounded-[12px] object-cover border border-gray-100" 
+            className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-md" 
             referrerPolicy="no-referrer"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -637,8 +666,8 @@ function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS
             }}
           />
           <div className={cn(
-            "absolute -bottom-1 w-4 h-4 rounded-full border-2 border-surface",
-            language === 'ar' ? "-right-1" : "-left-1",
+            "absolute bottom-0 w-4 h-4 rounded-full border-2 border-surface",
+            language === 'ar' ? "left-0" : "right-0",
             lawyer.availability === 'now' ? "bg-success" :
             lawyer.availability === 'soon' ? "bg-warning" : "bg-gray-400"
           )} />
@@ -659,11 +688,25 @@ function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS
             </div>
           </div>
 
+          {lawyer.description && (
+            <p className="text-xs text-muted mt-2 line-clamp-2">{lawyer.description}</p>
+          )}
+
+          {lawyer.badges && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {lawyer.badges.map((badge: string, i: number) => (
+                <span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
+                  {badge}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center gap-3 mt-2 text-xs text-muted">
             <div className="flex items-center gap-1">
               <Star size={14} className="text-accent fill-accent" />
               <span className="font-medium text-text">{lawyer.rating}</span>
-              <span>({lawyer.reviews})</span>
+              <span>({lawyer.reviews.toLocaleString()})</span>
             </div>
             <div className="flex items-center gap-1">
               <MapPin size={14} />
@@ -688,18 +731,22 @@ function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS
             </div>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex gap-2">
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onStart(lawyer)}
-              className="w-full bg-primary text-surface py-3.5 rounded-2xl text-base font-bold flex items-center justify-center gap-3 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 group"
+              className="flex-1 bg-primary text-surface py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
             >
-              <Scale size={20} className="group-hover:rotate-12 transition-transform" />
-              <span>
-                {language === 'ar' ? 'ابدأ مع المحامي' : 'Start with a Lawyer'}
-              </span>
-              {language === 'ar' ? <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> : <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+              <Scale size={16} />
+              <span>{language === 'ar' ? 'حجز استشارة' : 'Book Consultation'}</span>
+            </motion.button>
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-4 bg-gray-100 text-text py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-all"
+            >
+              <Phone size={16} />
             </motion.button>
           </div>
         </div>
