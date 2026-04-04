@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Shield, Mail, Lock, User, Phone, CheckCircle2, ChevronRight, Briefcase, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { auth, db } from '../firebase';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { AuthContext } from '../App';
 
 export default function RegisterScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setGuest } = useContext(AuthContext);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
+  const googleData = location.state as { googleUser?: boolean, uid?: string, email?: string, name?: string } | null;
+
   // Form State
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -34,6 +37,58 @@ export default function RegisterScreen() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [timer, setTimer] = useState(10);
   const [timerDone, setTimerDone] = useState(false);
+
+  useEffect(() => {
+    const checkRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          setLoading(true);
+          const user = result.user;
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (!userDoc.exists()) {
+            await setDoc(userDocRef, {
+              uid: user.uid,
+              name: user.displayName || '',
+              phone: '',
+              email: user.email || '',
+              role: 'client',
+              acceptedTerms: true,
+              isNewUser: true,
+              createdAt: new Date().toISOString()
+            });
+          }
+          
+          setIsSuccess(true);
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#C9A84C', '#1A3A5C', '#2D6A4F']
+          });
+
+          setTimeout(() => {
+            navigate('/app', { replace: true });
+          }, 2000);
+        }
+      } catch (err: any) {
+        console.error("Redirect Result Error:", err);
+        setErrors({ form: "حدث خطأ أثناء التسجيل بـ Google" });
+        setLoading(false);
+      }
+    };
+    checkRedirect();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (googleData?.googleUser) {
+      setStep(2);
+      setName(googleData.name || '');
+      setEmail(googleData.email || '');
+    }
+  }, [googleData]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -93,8 +148,10 @@ export default function RegisterScreen() {
 
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
-    if (password.length < 6) newErrors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
-    if (password !== confirmPassword) newErrors.confirmPassword = 'كلمة المرور غير متطابقة';
+    if (!googleData?.googleUser) {
+      if (password.length < 6) newErrors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+      if (password !== confirmPassword) newErrors.confirmPassword = 'كلمة المرور غير متطابقة';
+    }
     if (!role) newErrors.role = 'يرجى اختيار نوع الحساب';
     
     setErrors(newErrors);
@@ -116,17 +173,24 @@ export default function RegisterScreen() {
 
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      await updateProfile(user, { displayName: name });
+      let user;
+      if (googleData?.googleUser) {
+        user = auth.currentUser;
+        if (!user) throw new Error("User not found");
+      } else {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        user = userCredential.user;
+        await updateProfile(user, { displayName: name });
+      }
       
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         name,
-        phone,
+        phone: googleData?.googleUser ? '' : phone,
         email,
         role,
+        acceptedTerms: true,
+        isNewUser: true,
         createdAt: new Date().toISOString()
       });
 
@@ -150,6 +214,20 @@ export default function RegisterScreen() {
       setErrors({ form: message });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleRegister = async () => {
+    setLoading(true);
+    setErrors({});
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithRedirect(auth, provider);
+    } catch (err: any) {
+      console.error("Google Register Error:", err);
+      setLoading(false);
+      setShakeKey(prev => prev + 1);
+      setErrors({ form: "حدث خطأ أثناء التسجيل بـ Google" });
     }
   };
 
@@ -231,7 +309,7 @@ export default function RegisterScreen() {
             </div>
             <motion.div 
               animate={{ 
-                backgroundColor: step === 2 ? '#C9A84C' : 'transparent',
+                backgroundColor: step === 2 ? '#C9A84C' : 'rgba(0, 0, 0, 0)',
                 borderColor: step === 2 ? '#C9A84C' : '#E8E0D0'
               }}
               className="w-3.5 h-3.5 rounded-full border-2 z-10 transition-colors duration-300"
@@ -296,35 +374,48 @@ export default function RegisterScreen() {
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   className="flex flex-col gap-4 pb-4"
                 >
-                  <div className="flex items-center mb-1">
-                    <button onClick={() => setStep(1)} className="text-[#6B7C8D] hover:text-[#1A3A5C] flex items-center text-sm font-bold">
-                      <ChevronRight size={18} /> رجوع
-                    </button>
-                  </div>
-
-                  <div className="relative">
-                    <InputField 
-                      icon={<Lock />} placeholder="كلمة المرور" value={password} onChange={setPassword}
-                      error={errors.password} shakeKey={shakeKey} delay={0.1} type="password"
-                      focused={focusedField === 'password'} onFocus={() => setFocusedField('password')} onBlur={() => setFocusedField(null)}
-                    />
-                    <div className="mt-2 flex items-center gap-2 px-1">
-                      <div className="flex-1 h-1.5 bg-[#E8E0D0] rounded-full overflow-hidden">
-                        <motion.div 
-                          animate={{ width: strength.width, backgroundColor: strength.color }}
-                          transition={{ duration: 0.3 }}
-                          className="h-full"
-                        />
-                      </div>
-                      <span className="text-xs font-bold w-12 text-left" style={{ color: strength.color }}>{strength.text}</span>
+                  {!googleData?.googleUser && (
+                    <div className="flex items-center mb-1">
+                      <button onClick={() => setStep(1)} className="text-[#6B7C8D] hover:text-[#1A3A5C] flex items-center text-sm font-bold">
+                        <ChevronRight size={18} /> رجوع
+                      </button>
                     </div>
-                  </div>
+                  )}
 
-                  <InputField 
-                    icon={<Lock />} placeholder="تأكيد كلمة المرور" value={confirmPassword} onChange={setConfirmPassword}
-                    error={errors.confirmPassword} shakeKey={shakeKey} delay={0.2} type="password"
-                    focused={focusedField === 'confirmPassword'} onFocus={() => setFocusedField('confirmPassword')} onBlur={() => setFocusedField(null)}
-                  />
+                  {googleData?.googleUser && (
+                    <div className="text-center mb-2">
+                      <h2 className="text-lg font-bold text-[#1A3A5C]">أهلاً بك، {googleData.name?.split(' ')[0] || 'ضيفنا'} 👋</h2>
+                      <p className="text-sm text-[#6B7C8D]">أكمل إعداد حسابك لاختيار دورك في المنصة</p>
+                    </div>
+                  )}
+
+                  {!googleData?.googleUser && (
+                    <>
+                      <div className="relative">
+                        <InputField 
+                          icon={<Lock />} placeholder="كلمة المرور" value={password} onChange={setPassword}
+                          error={errors.password} shakeKey={shakeKey} delay={0.1} type="password"
+                          focused={focusedField === 'password'} onFocus={() => setFocusedField('password')} onBlur={() => setFocusedField(null)}
+                        />
+                        <div className="mt-2 flex items-center gap-2 px-1">
+                          <div className="flex-1 h-1.5 bg-[#E8E0D0] rounded-full overflow-hidden">
+                            <motion.div 
+                              animate={{ width: strength.width, backgroundColor: strength.color }}
+                              transition={{ duration: 0.3 }}
+                              className="h-full"
+                            />
+                          </div>
+                          <span className="text-xs font-bold w-12 text-left" style={{ color: strength.color }}>{strength.text}</span>
+                        </div>
+                      </div>
+
+                      <InputField 
+                        icon={<Lock />} placeholder="تأكيد كلمة المرور" value={confirmPassword} onChange={setConfirmPassword}
+                        error={errors.confirmPassword} shakeKey={shakeKey} delay={0.2} type="password"
+                        focused={focusedField === 'confirmPassword'} onFocus={() => setFocusedField('confirmPassword')} onBlur={() => setFocusedField(null)}
+                      />
+                    </>
+                  )}
 
                   <motion.div 
                     initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
@@ -378,16 +469,33 @@ export default function RegisterScreen() {
             </AnimatePresence>
           </div>
 
-          <div className="mt-4 shrink-0">
+          <div className="mt-4 shrink-0 space-y-3">
             {step === 1 ? (
-              <motion.button 
-                whileTap={{ scale: 0.95 }}
-                onClick={handleNext}
-                className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-[#1A3A5C] hover:bg-[#0F2540]"
-              >
-                التالي
-                <ChevronRight size={20} className="rotate-180" />
-              </motion.button>
+              <>
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleNext}
+                  className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-[#1A3A5C] hover:bg-[#0F2540]"
+                >
+                  التالي
+                  <ChevronRight size={20} className="rotate-180" />
+                </motion.button>
+                
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleGoogleRegister}
+                  disabled={loading || isSuccess}
+                  className="w-full bg-white border-2 border-[#E8E0D0] text-[#1C2B3A] font-bold h-14 rounded-[14px] shadow-sm transition-all flex items-center justify-center gap-3 hover:bg-gray-50 opacity-90 disabled:opacity-80"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  التسجيل باستخدام Google
+                </motion.button>
+              </>
             ) : (
               <motion.button 
                 whileTap={{ scale: 0.95 }}

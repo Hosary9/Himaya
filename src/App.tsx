@@ -67,6 +67,15 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
       }
       setLoading(false);
     });
+
+    // Initialize dark mode
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
     return () => unsubscribe();
   }, []);
 

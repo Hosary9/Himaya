@@ -1,12 +1,20 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 
 // Import the Firebase configuration
-import firebaseConfig from '../firebase-applet-config.json';
+const firebaseConfig = {
+  apiKey: "AIzaSyAEeSw5IUAeUVE0Bn1FkttrJ_Zlnc4Q1gc",
+  authDomain: "lawyer-app-76ee5.firebaseapp.com",
+  projectId: "lawyer-app-76ee5",
+  storageBucket: "lawyer-app-76ee5.firebasestorage.app",
+  messagingSenderId: "87851983884",
+  appId: "1:87851983884:web:99049c5efc3145ff253a29",
+  measurementId: "G-YX2NFFVF7E"
+};
 
 // Initialize Firebase SDK
-const app = initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
