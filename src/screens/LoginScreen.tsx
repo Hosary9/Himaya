@@ -128,7 +128,7 @@ export default function LoginScreen() {
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
-            className="absolute inset-0 bg-white z-50" 
+            className="absolute inset-0 bg-background z-50" 
           />
         )}
       </AnimatePresence>
@@ -177,7 +177,7 @@ export default function LoginScreen() {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.6, type: "spring", bounce: 0.2 }}
-          className="bg-white/95 backdrop-blur-xl p-8 rounded-[24px] shadow-[0_8px_32px_rgba(26,58,92,0.2)] border border-white/20"
+          className="bg-surface/95 backdrop-blur-xl p-8 rounded-[24px] shadow-[0_8px_32px_rgba(26,58,92,0.2)] border border-border/20"
         >
           <div className="space-y-5">
             <AnimatePresence>
@@ -186,7 +186,7 @@ export default function LoginScreen() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="bg-[#B03A2E]/15 border border-[#B03A2E] text-[#B03A2E] p-3 rounded-xl flex items-center gap-2 text-sm font-bold overflow-hidden"
+                  className="bg-emergency/15 border border-emergency text-emergency p-3 rounded-xl flex items-center gap-2 text-sm font-bold overflow-hidden"
                 >
                   <span>⚠️</span>
                   <span>{error}</span>
@@ -201,7 +201,7 @@ export default function LoginScreen() {
               key={`email-${shakeKey}`}
             >
               <div className="relative">
-                <Mail className="absolute top-1/2 -translate-y-1/2 right-4 text-[#6B7C8D]" size={20} />
+                <Mail className="absolute top-1/2 -translate-y-1/2 right-4 text-muted" size={20} />
                 <motion.input 
                   type="email" 
                   value={email}
@@ -210,10 +210,10 @@ export default function LoginScreen() {
                   onBlur={() => setFocusedField(null)}
                   placeholder="البريد الإلكتروني"
                   animate={{ 
-                    borderColor: focusedField === 'email' ? '#C9A84C' : '#E8E0D0',
+                    borderColor: focusedField === 'email' ? 'var(--color-secondary)' : 'var(--color-border)',
                     boxShadow: focusedField === 'email' ? '0 0 0 2px rgba(201,168,76,0.2)' : 'none'
                   }}
-                  className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-4 outline-none text-left dir-ltr text-[#1C2B3A] transition-colors"
+                  className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-4 outline-none text-left dir-ltr text-text transition-colors"
                 />
               </div>
             </motion.div>
@@ -225,7 +225,7 @@ export default function LoginScreen() {
               key={`pass-${shakeKey}`}
             >
               <div className="relative">
-                <Lock className="absolute top-1/2 -translate-y-1/2 right-4 text-[#6B7C8D]" size={20} />
+                <Lock className="absolute top-1/2 -translate-y-1/2 right-4 text-muted" size={20} />
                 <motion.input 
                   type={showPassword ? "text" : "password"} 
                   value={password}
@@ -234,15 +234,15 @@ export default function LoginScreen() {
                   onBlur={() => setFocusedField(null)}
                   placeholder="كلمة المرور"
                   animate={{ 
-                    borderColor: focusedField === 'password' ? '#C9A84C' : '#E8E0D0',
+                    borderColor: focusedField === 'password' ? 'var(--color-secondary)' : 'var(--color-border)',
                     boxShadow: focusedField === 'password' ? '0 0 0 2px rgba(201,168,76,0.2)' : 'none'
                   }}
-                  className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-12 outline-none text-left dir-ltr text-[#1C2B3A] transition-colors"
+                  className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-12 outline-none text-left dir-ltr text-text transition-colors"
                 />
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-1/2 -translate-y-1/2 left-4 text-[#6B7C8D] hover:text-[#1A3A5C] transition-colors"
+                  className="absolute top-1/2 -translate-y-1/2 left-4 text-muted hover:text-primary transition-colors"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
@@ -267,7 +267,7 @@ export default function LoginScreen() {
             >
               <button 
                 onClick={() => setIsForgotSheetOpen(true)}
-                className="text-sm font-bold text-[#C9A84C] hover:text-[#1A3A5C] transition-colors"
+                className="text-sm font-bold text-secondary hover:text-primary transition-colors"
               >
                 نسيت كلمة المرور؟
               </button>
@@ -284,13 +284,13 @@ export default function LoginScreen() {
                 onClick={handleLogin}
                 disabled={loading || isSuccess}
                 animate={{ 
-                  backgroundColor: isSuccess ? '#2D6A4F' : '#1A3A5C',
+                  backgroundColor: isSuccess ? 'var(--color-success)' : 'var(--color-primary)',
                   scale: isSuccess ? [1, 0.95, 1.05, 1] : 1
                 }}
-                className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-80 relative overflow-hidden"
+                className="w-full text-surface font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-80 relative overflow-hidden"
               >
                 {loading ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-surface border-t-transparent rounded-full animate-spin" />
                 ) : isSuccess ? (
                   <motion.div
                     initial={{ scale: 0 }}
@@ -308,7 +308,7 @@ export default function LoginScreen() {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleGoogleLogin}
                 disabled={loading || isSuccess}
-                className="w-full bg-white border-2 border-[#E8E0D0] text-[#1C2B3A] font-bold h-14 rounded-[14px] shadow-sm transition-all flex items-center justify-center gap-3 hover:bg-gray-50 opacity-90 disabled:opacity-80"
+                className="w-full bg-surface border-2 border-border text-text font-bold h-14 rounded-[14px] shadow-sm transition-all flex items-center justify-center gap-3 hover:bg-background opacity-90 disabled:opacity-80"
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -322,7 +322,7 @@ export default function LoginScreen() {
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={handleGuestMode}
-                className="w-full bg-transparent border-2 border-[#E8E0D0] text-[#1A3A5C] font-bold h-14 rounded-[14px] transition-all flex items-center justify-center gap-2 hover:bg-gray-50 opacity-90"
+                className="w-full bg-transparent border-2 border-border text-primary font-bold h-14 rounded-[14px] transition-all flex items-center justify-center gap-2 hover:bg-background opacity-90"
               >
                 <UserCircle size={20} />
                 دخول كضيف
@@ -331,16 +331,16 @@ export default function LoginScreen() {
           </div>
         </motion.div>
 
-        {/* Bottom Section */}
+              {/* Bottom Section */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
           className="mt-8 text-center"
         >
-          <p className="text-sm text-white/80">
+          <p className="text-sm text-surface/80">
             مش عندك حساب؟{' '}
-            <button onClick={() => navigate('/register')} className="font-bold text-[#C9A84C] hover:text-white transition-colors">
+            <button onClick={() => navigate('/register')} className="font-bold text-secondary hover:text-surface transition-colors">
               سجّل دلوقتي
             </button>
           </p>

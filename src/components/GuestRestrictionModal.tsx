@@ -2,7 +2,6 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, AlertCircle, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import COLORS from '../theme/colors';
 
 interface GuestRestrictionModalProps {
   isOpen: boolean;
@@ -28,7 +27,7 @@ export default function GuestRestrictionModal({ isOpen, onClose }: GuestRestrict
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="bg-white w-full max-w-sm rounded-[32px] p-8 shadow-2xl relative z-10 overflow-hidden"
+            className="bg-surface w-full max-w-sm rounded-[32px] p-8 shadow-2xl relative z-10 overflow-hidden border border-border"
             dir="rtl"
           >
             {/* Decorative background element */}
@@ -36,7 +35,7 @@ export default function GuestRestrictionModal({ isOpen, onClose }: GuestRestrict
             
             <button 
               onClick={onClose}
-              className="absolute top-4 left-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute top-4 left-4 p-2 text-muted hover:text-text transition-colors"
             >
               <X size={20} />
             </button>
@@ -54,8 +53,7 @@ export default function GuestRestrictionModal({ isOpen, onClose }: GuestRestrict
               <div className="flex flex-col w-full gap-3">
                 <button 
                   onClick={() => navigate('/register')}
-                  className="w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:opacity-95 transition-all active:scale-[0.98]"
-                  style={{ backgroundColor: COLORS.primary }}
+                  className="w-full py-4 bg-primary text-surface rounded-2xl font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:opacity-95 transition-all active:scale-[0.98]"
                 >
                   <UserPlus size={20} />
                   إنشاء حساب مجاني
@@ -63,7 +61,7 @@ export default function GuestRestrictionModal({ isOpen, onClose }: GuestRestrict
                 
                 <button 
                   onClick={() => navigate('/login')}
-                  className="w-full py-4 bg-transparent text-primary rounded-2xl font-bold border-2 border-primary/10 hover:bg-gray-50 transition-all"
+                  className="w-full py-4 bg-transparent text-primary rounded-2xl font-bold border-2 border-primary/10 hover:bg-primary/5 transition-all"
                 >
                   تسجيل الدخول
                 </button>

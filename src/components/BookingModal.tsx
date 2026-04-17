@@ -186,12 +186,12 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="bg-surface w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="font-bold text-lg text-text">
             {language === 'ar' ? 'حجز استشارة' : 'Book Consultation'}
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <X size={20} className="text-muted" />
+          <button onClick={onClose} className="p-2 hover:bg-background rounded-full transition-colors text-muted hover:text-text border border-transparent hover:border-border">
+            <X size={20} />
           </button>
         </div>
 
@@ -247,7 +247,7 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
                       className={`flex-shrink-0 px-4 py-3 rounded-xl border ${
                         selectedDate && isSameDay(selectedDate, date)
                           ? 'border-primary bg-primary/5 text-primary'
-                          : 'border-gray-200 text-muted hover:border-primary/50'
+                          : 'border-border text-muted hover:border-primary/50'
                       }`}
                     >
                       <div className="text-xs mb-1">
@@ -275,8 +275,8 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
                         onClick={() => setSelectedTime(time)}
                         className={`py-2 rounded-lg border text-sm font-medium ${
                           selectedTime === time
-                            ? 'border-primary bg-primary text-white'
-                            : 'border-gray-200 text-text hover:border-primary'
+                            ? 'border-primary bg-primary text-surface'
+                            : 'border-border text-text hover:border-primary cursor-pointer'
                         }`}
                       >
                         {time}
@@ -295,7 +295,7 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
                 {language === 'ar' ? 'تفاصيل الحجز' : 'Booking Details'}
               </h3>
               
-              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <div className="bg-surface rounded-xl p-4 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted">{language === 'ar' ? 'المحامي' : 'Lawyer'}</span>
                   <span className="font-bold text-text">{lawyer.name}</span>
@@ -320,16 +320,16 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
                 </div>
               </div>
 
-              <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+              <div className="border border-border rounded-xl p-4 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted">{language === 'ar' ? 'سعر الاستشارة' : 'Consultation Fee'}</span>
-                  <span className="font-medium">{lawyer.consultationPrice} {language === 'ar' ? 'ج.م' : 'EGP'}</span>
+                  <span className="font-medium text-text">{lawyer.consultationPrice} {language === 'ar' ? 'ج.م' : 'EGP'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted">{language === 'ar' ? 'رسوم المنصة' : 'Platform Fee'}</span>
-                  <span className="font-medium">{platformFee} {language === 'ar' ? 'ج.م' : 'EGP'}</span>
+                  <span className="font-medium text-text">{platformFee} {language === 'ar' ? 'ج.م' : 'EGP'}</span>
                 </div>
-                <div className="pt-3 border-t border-gray-200 flex justify-between">
+                <div className="pt-3 border-t border-border flex justify-between">
                   <span className="font-bold text-text">{language === 'ar' ? 'الإجمالي' : 'Total'}</span>
                   <span className="font-bold text-primary text-lg">{totalPrice} {language === 'ar' ? 'ج.م' : 'EGP'}</span>
                 </div>
@@ -340,8 +340,8 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
           {/* Step 4: Wallet Deposit */}
           {step === 4 && (
             <div className="space-y-6 text-center">
-              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle size={32} className="text-red-500" />
+              <div className="w-16 h-16 bg-emergency/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle size={32} className="text-emergency" />
               </div>
               <h3 className="font-bold text-text text-xl">
                 {language === 'ar' ? 'رصيد غير كافٍ' : 'Insufficient Balance'}
@@ -352,7 +352,7 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
                   : 'You must deposit funds into your wallet before booking.'}
               </p>
               
-              <div className="bg-gray-50 rounded-xl p-4 flex justify-between items-center">
+              <div className="bg-surface border border-border rounded-xl p-4 flex justify-between items-center">
                 <span className="text-muted">{language === 'ar' ? 'رصيدك الحالي' : 'Current Balance'}</span>
                 <span className="font-bold text-text">{walletBalance} {language === 'ar' ? 'ج.م' : 'EGP'}</span>
               </div>
@@ -368,12 +368,12 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
                   placeholder={language === 'ar' ? 'مبلغ الإيداع' : 'Deposit Amount'}
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:border-primary focus:ring-1 focus:ring-primary outline-none text-text"
                 />
                 <button 
                   onClick={handleDeposit}
                   disabled={isProcessing || !depositAmount}
-                  className="w-full py-3 bg-secondary text-white rounded-xl font-bold disabled:opacity-50"
+                  className="w-full py-3 bg-secondary text-surface rounded-xl font-bold disabled:opacity-50"
                 >
                   {isProcessing ? '...' : (language === 'ar' ? 'إيداع الآن' : 'Deposit Now')}
                 </button>
@@ -384,8 +384,8 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
           {/* Step 5: Success */}
           {step === 5 && (
             <div className="space-y-6 text-center py-8">
-              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 size={40} className="text-green-500" />
+              <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={40} className="text-success" />
               </div>
               <h3 className="font-bold text-text text-2xl">
                 {language === 'ar' ? 'تم الحجز بنجاح!' : 'Booking Confirmed!'}
@@ -396,7 +396,7 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
                   : 'Your appointment is confirmed. You can start the call 10 minutes before the scheduled time.'}
               </p>
               
-              <div className="bg-gray-50 rounded-xl p-4 mt-6">
+              <div className="bg-surface border border-border rounded-xl p-4 mt-6">
                 <div className="text-sm text-muted mb-1">{language === 'ar' ? 'موعد الحجز' : 'Appointment Time'}</div>
                 <div className="font-bold text-lg text-text" dir="ltr">
                   {selectedDate && format(selectedDate, 'dd MMM yyyy')} at {selectedTime}
@@ -408,11 +408,11 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
 
         {/* Footer */}
         {step < 5 && (
-          <div className="p-4 border-t border-gray-100 flex gap-3">
+          <div className="p-4 border-t border-border flex gap-3">
             {step > 1 && step < 4 && (
               <button 
                 onClick={() => setStep((s) => s - 1 as Step)}
-                className="px-6 py-3 rounded-xl font-bold text-text bg-gray-100 hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 rounded-xl font-bold text-text bg-surface border border-border hover:bg-background transition-colors"
               >
                 {language === 'ar' ? 'رجوع' : 'Back'}
               </button>
@@ -425,7 +425,7 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
                 (step === 2 && (!selectedDate || !selectedTime)) ||
                 (step === 4 && walletBalance < totalPrice)
               }
-              className="flex-1 py-3 bg-primary text-white rounded-xl font-bold disabled:opacity-50 hover:bg-primary/90 transition-colors"
+              className="flex-1 py-3 bg-primary text-surface rounded-xl font-bold disabled:opacity-50 hover:bg-primary/90 transition-colors"
             >
               {isProcessing ? '...' : 
                step === 3 ? (language === 'ar' ? 'تأكيد الحجز' : 'Confirm Booking') : 
@@ -435,10 +435,10 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
           </div>
         )}
         {step === 5 && (
-          <div className="p-4 border-t border-gray-100">
+          <div className="p-4 border-t border-border">
             <button 
               onClick={onClose}
-              className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors"
+              className="w-full py-3 bg-primary text-surface rounded-xl font-bold hover:bg-primary/90 transition-colors"
             >
               {language === 'ar' ? 'تم' : 'Done'}
             </button>
@@ -456,11 +456,11 @@ function TypeCard({ icon, title, selected, onClick }: { icon: React.ReactNode, t
       className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
         selected 
           ? 'border-primary bg-primary/5 text-primary' 
-          : 'border-gray-100 bg-white text-muted hover:border-primary/30 hover:bg-gray-50'
+          : 'border-border bg-surface text-muted hover:border-primary/30 hover:bg-background'
       }`}
     >
       <div className="mb-2">{icon}</div>
-      <span className="text-sm font-bold">{title}</span>
+      <span className="text-sm font-bold text-text">{title}</span>
     </button>
   );
 }

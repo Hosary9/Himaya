@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Star, MapPin, Clock, ShieldCheck, Filter, ChevronDown, Video, Phone, AlertTriangle, CheckCircle2, Calendar } from "lucide-react";
+import { Star, MapPin, Clock, ShieldCheck, Filter, ChevronDown, Video, Phone, AlertTriangle, CheckCircle2, Calendar, Briefcase } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { useLanguage } from "../lib/i18n";
@@ -382,6 +382,7 @@ export default function LawyerSearch() {
   const [activeSpecialty, setActiveSpecialty] = useState(state?.specialty || 'all');
   const [activeGovernorate, setActiveGovernorate] = useState('all');
   const [activeAvailability, setActiveAvailability] = useState(state ? 'soonest' : 'all');
+  const [activeVerification, setActiveVerification] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('match'); // match, rating, price_asc, price_desc
   const [showFilters, setShowFilters] = useState(false);
@@ -390,14 +391,16 @@ export default function LawyerSearch() {
   useEffect(() => {
     const lawyersPath = 'lawyers';
     const unsubscribe = onSnapshot(collection(db, lawyersPath), (snapshot) => {
-      if (snapshot.empty) {
-        // If no lawyers in DB, we could seed them or just show empty
-        // For now, let's use MOCK_LAWYERS as fallback if DB is empty
-        setLawyers(MOCK_LAWYERS);
-      } else {
-        const lawyersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setLawyers(lawyersData);
+      let fetchedLawyers: any[] = [];
+      if (!snapshot.empty) {
+        fetchedLawyers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       }
+      
+      // Merge fetched lawyers with mock lawyers so the page always has content
+      // Also filter out any possibly empty docs from firebase that don't have a name
+      const validFetched = fetchedLawyers.filter(l => l.name);
+      
+      setLawyers([...validFetched, ...MOCK_LAWYERS]);
       setLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, lawyersPath);
@@ -425,6 +428,11 @@ export default function LawyerSearch() {
     if (activeGovernorate !== 'all' && lawyer.governorate !== activeGovernorate) return false;
     if (activeAvailability === 'soonest' && lawyer.availability === 'appointment') return false; // Hide appointment only if soonest is selected
     if (activeAvailability === 'now' && lawyer.availability !== 'now') return false;
+    if (activeVerification !== 'all') {
+      // Mock data logic for verification filter: assume 'verified' mock data doesn't have verificationStatus, but real data would
+      const status = lawyer.verificationStatus || 'verified'; // Assume mock is verified
+      if (status !== activeVerification) return false;
+    }
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (lawyer.name?.toLowerCase().includes(query) || 
@@ -491,7 +499,7 @@ export default function LawyerSearch() {
           onClick={() => setShowFilters(!showFilters)}
           className={cn(
             "p-2 rounded-xl border transition-colors",
-            showFilters ? "bg-primary text-surface border-primary" : "bg-surface border-gray-200 text-muted hover:bg-gray-50"
+            showFilters ? "bg-primary text-surface border-primary" : "bg-surface border-border text-muted hover:bg-background"
           )}
         >
           <Filter size={20} />
@@ -506,7 +514,7 @@ export default function LawyerSearch() {
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={language === 'ar' ? "ابحث بالاسم، التخصص، أو المحافظة..." : "Search by name, specialty, or governorate..."}
           className={cn(
-            "w-full bg-surface border border-gray-200 rounded-2xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all",
+            "w-full bg-surface border border-border rounded-2xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text placeholder:text-muted",
             language === 'ar' ? "pr-11" : "pl-11"
           )}
         />
@@ -515,17 +523,17 @@ export default function LawyerSearch() {
 
       {/* Advanced Filters (Expandable) */}
       {showFilters && (
-        <div className="bg-surface rounded-2xl p-4 border border-gray-100 shadow-sm space-y-4 animate-in slide-in-from-top-2">
+        <div className="bg-surface rounded-2xl p-4 border border-border shadow-sm space-y-4 animate-in slide-in-from-top-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-muted mb-2">{language === 'ar' ? 'المحافظة' : 'Governorate'}</label>
               <select 
                 value={activeGovernorate}
                 onChange={(e) => setActiveGovernorate(e.target.value)}
-                className="w-full bg-background border border-gray-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full bg-background border border-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-text"
               >
                 {GOVERNORATES.map(gov => (
-                  <option key={gov.id} value={gov.id}>{language === 'ar' ? gov.label : gov.labelEn}</option>
+                  <option key={gov.id} value={gov.id} className="bg-surface">{language === 'ar' ? gov.label : gov.labelEn}</option>
                 ))}
               </select>
             </div>
@@ -534,15 +542,27 @@ export default function LawyerSearch() {
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full bg-background border border-gray-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full bg-background border border-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-text"
               >
-                <option value="match">{language === 'ar' ? 'الأفضل تطابقاً' : 'Best Match'}</option>
-                <option value="rating">{language === 'ar' ? 'الأعلى تقييماً' : 'Highest Rating'}</option>
-                <option value="price_asc">{language === 'ar' ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
-                <option value="price_desc">{language === 'ar' ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
+                <option value="match" className="bg-surface">{language === 'ar' ? 'الأفضل تطابقاً' : 'Best Match'}</option>
+                <option value="rating" className="bg-surface">{language === 'ar' ? 'الأعلى تقييماً' : 'Highest Rating'}</option>
+                <option value="price_asc" className="bg-surface">{language === 'ar' ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
+                <option value="price_desc" className="bg-surface">{language === 'ar' ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
               </select>
             </div>
-            <div className="md:col-span-2">
+            <div>
+              <label className="block text-xs font-semibold text-muted mb-2">{language === 'ar' ? 'حالة التوثيق' : 'Verification Status'}</label>
+              <select 
+                value={activeVerification}
+                onChange={(e) => setActiveVerification(e.target.value)}
+                className="w-full bg-background border border-border rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-text"
+              >
+                <option value="all" className="bg-surface">{language === 'ar' ? 'الكل' : 'All'}</option>
+                <option value="verified" className="bg-surface">{language === 'ar' ? 'موثق' : 'Verified'}</option>
+                <option value="unverified" className="bg-surface">{language === 'ar' ? 'غير موثق' : 'Unverified'}</option>
+              </select>
+            </div>
+            <div className="md:col-span-1">
               <label className="block text-xs font-semibold text-muted mb-2">{language === 'ar' ? 'التوفر' : 'Availability'}</label>
               <div className="flex flex-wrap gap-2">
                 <FilterChip label={language === 'ar' ? "الكل" : "All"} active={activeAvailability === 'all'} onClick={() => setActiveAvailability('all')} />
@@ -582,9 +602,9 @@ export default function LawyerSearch() {
             />
           ))
         ) : (
-          <div className="text-center py-12 bg-surface rounded-2xl border border-gray-100 border-dashed">
-            <ShieldCheck size={48} className="text-gray-300 mx-auto mb-4" />
-            <h3 className="font-bold text-lg mb-2">{language === 'ar' ? 'مفيش محامين متاحين دلوقتي' : 'No lawyers available right now'}</h3>
+          <div className="text-center py-12 bg-surface rounded-2xl border border-border border-dashed">
+            <ShieldCheck size={48} className="text-muted/30 mx-auto mb-4" />
+            <h3 className="font-bold text-lg mb-2 text-text">{language === 'ar' ? 'مفيش محامين متاحين دلوقتي' : 'No lawyers available right now'}</h3>
             <p className="text-muted text-sm max-w-xs mx-auto">
               {language === 'ar' ? 'في المحافظة المحددة لهذا التخصص. جرب تغيير المحافظة أو البحث في تخصص آخر.' : 'In the selected governorate for this specialty. Try changing the governorate or searching in another specialty.'}
             </p>
@@ -630,7 +650,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
         "whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors border",
         active
           ? "bg-primary text-surface border-primary"
-          : "bg-surface text-muted border-gray-200 hover:bg-gray-50"
+          : "bg-surface text-muted border-border hover:bg-background"
       )}
     >
       {label}
@@ -640,7 +660,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
 
 function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS[0]; language: string; key?: React.Key; onStart: (lawyer: any) => void }) {
   return (
-    <div className="bg-surface rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+    <div className="bg-surface rounded-2xl p-4 border border-border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
       {lawyer.isExpatSpecialist && (
         <div className="absolute top-0 left-0 bg-primary text-surface text-[10px] font-bold px-3 py-1 rounded-br-xl flex items-center gap-1 z-10">
           🌍 {language === 'ar' ? 'دعم المغتربين' : 'Expat Support'}
@@ -658,7 +678,7 @@ function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS
           <img 
             src={lawyer.image} 
             alt={lawyer.name} 
-            className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-md" 
+            className="w-20 h-20 rounded-full object-cover border-2 border-surface shadow-md cursor-pointer" 
             referrerPolicy="no-referrer"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -668,7 +688,7 @@ function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS
           <div className={cn(
             "absolute bottom-0 w-4 h-4 rounded-full border-2 border-surface",
             language === 'ar' ? "left-0" : "right-0",
-            lawyer.availability === 'now' ? "bg-success" :
+            lawyer.availability === 'now' ? "bg-success animate-pulse" :
             lawyer.availability === 'soon' ? "bg-warning" : "bg-gray-400"
           )} />
         </div>
@@ -676,57 +696,75 @@ function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-bold text-text truncate flex items-center gap-1">
-                {language === 'ar' ? lawyer.name : lawyer.nameEn}
-                <ShieldCheck size={16} className="text-primary shrink-0" />
-              </h3>
-              <p className="text-xs text-primary font-medium mt-0.5">{language === 'ar' ? lawyer.specialtyLabel : lawyer.specialtyLabelEn}</p>
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                <h3 className="font-bold text-text truncate flex items-center gap-1">
+                  {language === 'ar' ? lawyer.name : lawyer.nameEn}
+                  <ShieldCheck size={16} className="text-primary shrink-0" />
+                </h3>
+                {lawyer.availability === 'now' && (
+                  <span className="text-[10px] font-bold text-success flex items-center gap-1 bg-success/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                    {language === 'ar' ? 'متاح الآن' : 'Available Now'}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-primary font-medium">{language === 'ar' ? lawyer.specialtyLabel : lawyer.specialtyLabelEn}</p>
             </div>
             <div className="bg-accent/10 text-accent text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 shrink-0">
               {lawyer.matchScore}% {language === 'ar' ? 'تطابق' : 'Match'}
             </div>
           </div>
 
-          {lawyer.description && (
-            <p className="text-xs text-muted mt-2 line-clamp-2">{lawyer.description}</p>
-          )}
+          <p className="text-xs text-muted mt-2 line-clamp-2 leading-relaxed">
+            {lawyer.description ? lawyer.description : (
+              language === 'ar' 
+                ? `محامي متخصص في ${lawyer.specialtyLabel} بخبرة تمتد لـ ${lawyer.experience}. يقدم استشارات قانونية دقيقة ومتابعة احترافية لضمان حقوقك.` 
+                : `Lawyer specializing in ${lawyer.specialtyLabelEn} with ${lawyer.experienceEn} of experience. Provides accurate legal consultations and professional follow-up to ensure your rights.`
+            )}
+          </p>
 
           {lawyer.badges && (
             <div className="flex flex-wrap gap-1 mt-2">
               {lawyer.badges.map((badge: string, i: number) => (
-                <span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
+                <span key={i} className="text-[10px] bg-background text-muted px-2 py-0.5 rounded-md font-medium border border-border">
                   {badge}
                 </span>
               ))}
             </div>
           )}
 
-          <div className="flex items-center gap-3 mt-2 text-xs text-muted">
-            <div className="flex items-center gap-1">
-              <Star size={14} className="text-accent fill-accent" />
-              <span className="font-medium text-text">{lawyer.rating}</span>
-              <span>({lawyer.reviews.toLocaleString()})</span>
+          <div className="flex flex-wrap items-center gap-y-2 gap-x-4 mt-3 text-xs text-muted bg-background p-2 rounded-xl border border-border">
+            <div className="flex items-center gap-1.5" title={language === 'ar' ? 'التقييم' : 'Rating'}>
+              <Star size={14} className="text-secondary fill-secondary" />
+              <span className="font-bold text-text">{lawyer.rating}</span>
+              <span className="text-[10px] text-muted">({lawyer.reviews.toLocaleString()} {language === 'ar' ? 'صوت' : 'reviews'})</span>
             </div>
-            <div className="flex items-center gap-1">
-              <MapPin size={14} />
-              <span className="truncate">{language === 'ar' ? lawyer.location : lawyer.locationEn}</span>
+            <div className="h-3 w-px bg-border"></div>
+            <div className="flex items-center gap-1" title={language === 'ar' ? 'الخبرة' : 'Experience'}>
+              <Briefcase size={14} className="text-primary/70" />
+              <span className="font-medium text-text">{language === 'ar' ? lawyer.experience : lawyer.experienceEn}</span>
+            </div>
+            <div className="h-3 w-px bg-border"></div>
+            <div className="flex items-center gap-1" title={language === 'ar' ? 'الموقع' : 'Location'}>
+              <MapPin size={14} className="text-primary/70" />
+              <span className="truncate max-w-[120px] text-text">{language === 'ar' ? lawyer.location : lawyer.locationEn}</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-gray-50">
+          <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-border">
             <div className="space-y-1">
               <p className="text-[10px] text-muted uppercase font-bold tracking-wider">{language === 'ar' ? 'الاستشارة' : 'Consultation'}</p>
               <div className="text-sm font-bold text-text">
                 {lawyer.consultationPrice.toLocaleString()} {language === 'ar' ? 'ج.م' : 'EGP'} 
-                <span className="text-[10px] font-normal text-muted block">/ 30 {language === 'ar' ? 'دقيقة' : 'min'}</span>
+                <span className="text-[10px] font-normal text-muted inline-block mr-1">/ 30 {language === 'ar' ? 'دقيقة' : 'min'}</span>
               </div>
             </div>
-            <div className="space-y-1 border-r border-gray-50 pr-2">
+            <div className="space-y-1 border-r border-border pr-2">
               <p className="text-[10px] text-muted uppercase font-bold tracking-wider">{language === 'ar' ? 'أتعاب القضية' : 'Case Fees'}</p>
               <div className="text-sm font-bold text-secondary">
                 {lawyer.casePriceRange} <span className="text-[10px] font-normal">{language === 'ar' ? 'ج.م' : 'EGP'}</span>
-                <span className="text-[10px] font-normal text-muted block">{language === 'ar' ? 'حسب المجهود' : 'Based on effort'}</span>
+                <span className="text-[10px] font-normal text-muted block">{language === 'ar' ? 'حسب المجهود (تقريبي)' : 'Estimated based on effort'}</span>
               </div>
             </div>
           </div>
@@ -744,7 +782,7 @@ function LawyerCard({ lawyer, language, onStart }: { lawyer: typeof MOCK_LAWYERS
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-4 bg-gray-100 text-text py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-all"
+              className="px-4 bg-background text-text py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-surface transition-all border border-border"
             >
               <Phone size={16} />
             </motion.button>

@@ -23,30 +23,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import AnimatedLogo from '../components/AnimatedLogo';
 import LawyerVerification from '../components/LawyerVerification';
 
-function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">{title}</h3>
-      <div className="space-y-2">{children}</div>
-    </section>
-  );
-}
-
-function SettingsItem({ label }: { label: string }) {
-  return (
-    <button className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-      <span className="font-medium text-gray-800">{label}</span>
-      <ChevronLeft size={20} className="text-gray-400" />
-    </button>
-  );
-}
-
 export default function ClientHomeScreen() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   useEffect(() => {
     const fetchUserData = async () => {
       if (auth.currentUser) {
@@ -100,93 +81,46 @@ export default function ClientHomeScreen() {
 
   const secondaryActions = [
     { id: 'rights', title: t('know_rights'), icon: <BookOpen size={24} />, path: '/app/rights' },
-    { id: 'contracts', title: t('contracts'), icon: <FileText size={24} />, path: '/app/contracts' },
     { id: 'cases', title: t('my_cases'), icon: <Briefcase size={24} />, path: '/app/cases' },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.background }}>
+    <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white px-6 py-4 flex items-center justify-between shadow-sm border-b" style={{ borderColor: COLORS.border }}>
-        {/* Left Side: Menu icon only */}
+      <header className="glass px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+        {/* Left Side: Logout icon since it's a home screen or Menu */}
         <div className="flex items-center gap-2">
-          <button className="p-2 rounded-full bg-gray-50" style={{ color: COLORS.muted }}>
-            <Menu size={24} />
+          <button className="p-2 rounded-xl bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
+            <Menu size={20} />
           </button>
         </div>
 
         {/* Right Side: Notification icon, Settings icon, Logo */}
         <div className="flex items-center gap-3">
-          <button className="p-2 rounded-full bg-gray-50 relative" style={{ color: COLORS.muted }}>
-            <Bell size={24} />
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-warning rounded-full border-2 border-white"></span>
-          </button>
-          <button 
-            onClick={() => setIsSettingsOpen(true)}
-            className="p-2 rounded-full bg-gray-50" 
-            style={{ color: COLORS.muted }}
-          >
-            <Settings size={24} />
-          </button>
+          <div className="flex items-center gap-2 px-1">
+            <button className="p-2 rounded-xl bg-background/50 text-muted hover:text-text transition-colors relative border border-border">
+              <Bell size={20} />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-warning rounded-full border-2 border-surface"></span>
+            </button>
+            <button 
+              onClick={() => navigate('/app/settings')}
+              className="p-2 rounded-xl bg-background/50 text-muted hover:text-text transition-colors border border-border" 
+            >
+              <Settings size={20} />
+            </button>
+          </div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold" style={{ color: COLORS.primary }}>محامينا</h1>
-            <AnimatedLogo size={40} />
+            <h1 className="text-xl font-bold text-primary tracking-tight">محامينا</h1>
+            <AnimatedLogo size={36} />
           </div>
         </div>
       </header>
 
-      <AnimatePresence>
-        {isSettingsOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-50 bg-white shadow-2xl p-6 overflow-y-auto"
-          >
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold">Settings</h2>
-              <button onClick={() => setIsSettingsOpen(false)}><X size={24} /></button>
-            </div>
-            
-            <div className="space-y-8">
-              <SettingsSection title="Account Settings">
-                <SettingsItem label="Edit profile" />
-                <SettingsItem label="Change password" />
-                <SettingsItem label="Update phone" />
-              </SettingsSection>
-              
-              <SettingsSection title="App Settings">
-                <SettingsItem label="Language switch (Arabic / English)" />
-                <SettingsItem label="Dark mode toggle" />
-              </SettingsSection>
-
-              <SettingsSection title="Notifications">
-                <SettingsItem label="Enable/Disable notifications" />
-                <SettingsItem label="Case updates" />
-                <SettingsItem label="Lawyer messages" />
-              </SettingsSection>
-
-              <SettingsSection title="Support">
-                <SettingsItem label="Help center" />
-                <SettingsItem label="Contact support" />
-                <SettingsItem label="Report issue" />
-              </SettingsSection>
-
-              <SettingsSection title="Security">
-                <SettingsItem label="Logout" />
-                <SettingsItem label="Delete account" />
-              </SettingsSection>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <main className="flex-1 p-6 space-y-8 max-w-4xl mx-auto w-full">
         {/* Welcome Section */}
         <section>
-          <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>{t('welcome')}{userName ? `، ${userName}` : ''}</h2>
-          <p className="text-sm" style={{ color: COLORS.muted }}>{t('how_can_help')}</p>
+          <h2 className="text-2xl font-bold mb-2 text-text">{t('welcome')}{userName ? `، ${userName}` : ''}</h2>
+          <p className="text-sm text-muted">{t('how_can_help')}</p>
         </section>
 
         {/* Main Action Cards */}
@@ -195,15 +129,14 @@ export default function ClientHomeScreen() {
             <button 
               key={action.id}
               onClick={() => navigate(action.path)}
-              className="bg-white p-6 rounded-3xl shadow-sm border border-transparent hover:border-primary transition-all text-right flex flex-col items-start gap-4 group"
-              style={{ borderColor: COLORS.border }}
+              className="bg-surface p-6 rounded-3xl shadow-sm border border-border hover:shadow-xl hover:border-primary transition-all duration-300 text-right flex flex-col items-start gap-4 group"
             >
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: `${action.color}10`, color: action.color }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 shadow-lg bg-primary/10 text-primary border border-primary/20">
                 {action.icon}
               </div>
               <div>
-                <h3 className="text-lg font-bold mb-1" style={{ color: COLORS.text }}>{action.title}</h3>
-                <p className="text-sm" style={{ color: COLORS.muted }}>{action.desc}</p>
+                <h3 className="text-lg font-bold mb-1 text-text tracking-tight">{action.title}</h3>
+                <p className="text-xs text-muted font-medium opacity-80">{action.desc}</p>
               </div>
             </button>
           ))}
@@ -211,19 +144,18 @@ export default function ClientHomeScreen() {
 
         {/* Secondary Actions Grid */}
         <section>
-          <h3 className="text-lg font-bold mb-4" style={{ color: COLORS.text }}>{t('extra_services')}</h3>
+          <h3 className="text-lg font-bold mb-4 text-text tracking-tight uppercase">{t('extra_services')}</h3>
           <div className="grid grid-cols-3 gap-3">
             {secondaryActions.map(action => (
               <button 
                 key={action.id}
                 onClick={() => navigate(action.path)}
-                className="bg-white p-4 rounded-2xl shadow-sm border flex flex-col items-center gap-3 hover:bg-gray-50 transition-colors"
-                style={{ borderColor: COLORS.border }}
+                className="bg-surface p-4 rounded-2xl shadow-sm border border-border flex flex-col items-center gap-3 hover:shadow-md transition-all group"
               >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${COLORS.primary}05`, color: COLORS.primary }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary/10 transition-colors">
                   {action.icon}
                 </div>
-                <span className="text-xs font-bold text-center" style={{ color: COLORS.text }}>{action.title}</span>
+                <span className="text-xs font-bold text-center text-text opacity-90 group-hover:opacity-100">{action.title}</span>
               </button>
             ))}
           </div>
@@ -231,26 +163,25 @@ export default function ClientHomeScreen() {
 
         {/* Lawyer Verification Section */}
         {userRole === 'lawyer' && (
-          <section className="bg-white p-6 rounded-3xl shadow-sm border" style={{ borderColor: COLORS.border }}>
+          <section className="bg-surface p-6 rounded-3xl shadow-sm border border-border">
             <LawyerVerification />
           </section>
         )}
 
         {/* Emergency Section */}
-        <section className="bg-white p-6 rounded-3xl border-2 border-dashed flex items-center justify-between" style={{ borderColor: COLORS.emergency }}>
+        <section className="bg-emergency/5 p-6 rounded-3xl border border-emergency/30 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center animate-pulse" style={{ backgroundColor: `${COLORS.emergency}10`, color: COLORS.emergency }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center animate-pulse bg-emergency/10 text-emergency shadow-[0_0_15px_rgba(231,111,111,0.2)]">
               <Shield size={28} />
             </div>
             <div>
-              <h3 className="font-bold" style={{ color: COLORS.emergency }}>{t('emergency_title')}</h3>
-              <p className="text-xs" style={{ color: COLORS.muted }}>{t('emergency_desc')}</p>
+              <h3 className="font-bold text-emergency tracking-tight uppercase text-sm">{t('emergency_title')}</h3>
+              <p className="text-xs text-muted font-medium opacity-80">{t('emergency_desc')}</p>
             </div>
           </div>
           <button 
             onClick={() => navigate('/app/lawyers')}
-            className="px-6 py-2 rounded-xl text-white font-bold text-sm" 
-            style={{ backgroundColor: COLORS.emergency }}
+            className="px-6 py-3 rounded-xl text-surface font-bold text-xs bg-emergency hover:bg-emergency/80 transition-all shadow-lg active:scale-95" 
           >
             {t('emergency_call')}
           </button>

@@ -76,14 +76,14 @@ export default function MyCases() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+      <div className="flex gap-2 p-1 bg-surface border border-border rounded-xl">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
-              activeTab === tab.id ? "bg-white text-primary shadow-sm" : "text-muted hover:text-text"
+              activeTab === tab.id ? "bg-background text-primary shadow-sm border border-border" : "text-muted hover:text-text bg-surface"
             )}
           >
             {tab.label[language]}
@@ -94,9 +94,9 @@ export default function MyCases() {
       {/* Activities List */}
       <div className="space-y-4">
         {filteredActivities.length === 0 ? (
-          <div className="text-center py-12 bg-surface rounded-2xl border border-dashed border-gray-200">
-            <p className="text-muted mb-4">{language === 'ar' ? 'لم تقم بأي إجراء قانوني بعد' : 'No legal actions yet'}</p>
-            <button className="bg-primary text-surface px-6 py-2 rounded-lg font-bold">
+          <div className="text-center py-12 bg-surface rounded-2xl border border-dashed border-border shadow-sm">
+            <p className="text-muted font-medium mb-4">{language === 'ar' ? 'لم تقم بأي إجراء قانوني بعد' : 'No legal actions yet'}</p>
+            <button className="bg-primary text-surface px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
               {language === 'ar' ? 'ابدأ الآن' : 'Start Now'}
             </button>
           </div>
@@ -105,10 +105,10 @@ export default function MyCases() {
             <div 
               key={activity.id} 
               onClick={() => navigate(`/${activity.type}-details/${activity.id}`)}
-              className="bg-surface rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:border-primary/20 transition-all active:scale-[0.98]"
+              className="bg-surface rounded-2xl p-5 border border-border shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:border-primary/20 transition-all active:scale-[0.98]"
             >
               <div className="flex items-center gap-4">
-                <div className={cn("p-3 rounded-xl", activity.type === 'case' ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent')}>
+                <div className={cn("p-3 rounded-xl border", activity.type === 'case' ? 'bg-secondary/10 text-secondary border-secondary/20' : 'bg-accent/10 text-accent border-accent/20')}>
                   {activity.type === 'case' ? <Scale size={24} /> : activity.type === 'consultation' ? <MessageSquare size={24} /> : <FileText size={24} />}
                 </div>
                 <div>
@@ -122,15 +122,15 @@ export default function MyCases() {
               </div>
               <div className="flex items-center gap-4">
                 <span className={cn(
-                  "px-3 py-1 rounded-full text-xs font-bold",
-                  activity.status === 'completed' ? "bg-success/10 text-success" : 
-                  activity.status === 'active' ? "bg-secondary/10 text-secondary" : "bg-warning/10 text-warning"
+                  "px-3 py-1 rounded-full text-xs font-bold border",
+                  activity.status === 'completed' ? "bg-success/10 text-success border-success/20" : 
+                  activity.status === 'active' ? "bg-secondary/10 text-secondary border-secondary/20" : "bg-warning/10 text-warning border-warning/20"
                 )}>
                   {activity.status === 'active' ? (language === 'ar' ? 'جاري التنفيذ' : 'In Progress') : 
                    activity.status === 'completed' ? (language === 'ar' ? 'مكتمل' : 'Completed') : 
                    (language === 'ar' ? 'قيد المراجعة' : 'Under Review')}
                 </span>
-                <ChevronRight size={20} className="text-muted" />
+                <ChevronRight size={20} className={cn("text-muted", language === 'ar' ? "rotate-180" : "")} />
               </div>
             </div>
           ))

@@ -202,7 +202,7 @@ export default function OutcomeSimulator() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500 max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-accent/10 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3">
+        <div className="w-16 h-16 bg-accent/10 text-secondary rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3 border border-secondary/20 shadow-sm">
           <Activity size={32} />
         </div>
         <h2 className="text-2xl font-bold text-text mb-2">{t('sim.title')}</h2>
@@ -212,24 +212,24 @@ export default function OutcomeSimulator() {
       </div>
 
       {step === 1 && (
-        <div className="bg-surface rounded-2xl p-6 border border-gray-100 shadow-sm space-y-5">
+        <div className="bg-surface rounded-2xl p-6 border border-border shadow-sm space-y-5">
           <div>
-            <label className="block text-sm font-semibold mb-2">{t('sim.caseType')}</label>
+            <label className="block text-sm font-bold text-text mb-2">{t('sim.caseType')}</label>
             <select 
               value={caseType}
               onChange={(e) => setCaseType(e.target.value)}
-              className="w-full bg-background border border-gray-200 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full bg-background border border-border rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 text-text transition-all"
             >
-              <option value="">{t('sim.caseType.placeholder')}</option>
-              <option value={language === 'ar' ? "عمالي - فصل تعسفي" : "Labor - Arbitrary Dismissal"}>{language === 'ar' ? "عمالي - فصل تعسفي" : "Labor - Arbitrary Dismissal"}</option>
-              <option value={language === 'ar' ? "أسرة - نفقة" : "Family - Alimony"}>{language === 'ar' ? "أسرة - نفقة" : "Family - Alimony"}</option>
-              <option value={language === 'ar' ? "مدني - تعويض" : "Civil - Compensation"}>{language === 'ar' ? "مدني - تعويض" : "Civil - Compensation"}</option>
-              <option value={language === 'ar' ? "تجاري - شيكات بدون رصيد" : "Commercial - Bounced Checks"}>{language === 'ar' ? "تجاري - شيكات بدون رصيد" : "Commercial - Bounced Checks"}</option>
-              <option value={language === 'ar' ? "جنائي - خيانة أمانة" : "Criminal - Breach of Trust"}>{language === 'ar' ? "جنائي - خيانة أمانة" : "Criminal - Breach of Trust"}</option>
+              <option value="" className="bg-surface">{t('sim.caseType.placeholder')}</option>
+              <option value={language === 'ar' ? "عمالي - فصل تعسفي" : "Labor - Arbitrary Dismissal"} className="bg-surface">{language === 'ar' ? "عمالي - فصل تعسفي" : "Labor - Arbitrary Dismissal"}</option>
+              <option value={language === 'ar' ? "أسرة - نفقة" : "Family - Alimony"} className="bg-surface">{language === 'ar' ? "أسرة - نفقة" : "Family - Alimony"}</option>
+              <option value={language === 'ar' ? "مدني - تعويض" : "Civil - Compensation"} className="bg-surface">{language === 'ar' ? "مدني - تعويض" : "Civil - Compensation"}</option>
+              <option value={language === 'ar' ? "تجاري - شيكات بدون رصيد" : "Commercial - Bounced Checks"} className="bg-surface">{language === 'ar' ? "تجاري - شيكات بدون رصيد" : "Commercial - Bounced Checks"}</option>
+              <option value={language === 'ar' ? "جنائي - خيانة أمانة" : "Criminal - Breach of Trust"} className="bg-surface">{language === 'ar' ? "جنائي - خيانة أمانة" : "Criminal - Breach of Trust"}</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-2">{t('sim.desc')}</label>
+            <label className="block text-sm font-bold text-text mb-2">{t('sim.desc')}</label>
             <textarea 
               rows={4}
               value={description}
@@ -239,43 +239,43 @@ export default function OutcomeSimulator() {
               }}
               placeholder={t('sim.desc.placeholder')}
               className={cn(
-                "w-full bg-background border rounded-xl py-3 px-4 focus:outline-none focus:ring-2 resize-none transition-colors",
-                validationError ? "border-emergency focus:ring-emergency/20" : "border-gray-200 focus:ring-primary/20 focus:border-primary"
+                "w-full bg-background border rounded-xl py-3 px-4 focus:outline-none focus:ring-2 resize-none transition-all text-text placeholder:text-muted",
+                validationError ? "border-emergency focus:ring-emergency/20" : "border-border focus:ring-primary/20 focus:border-primary"
               )}
             />
             {validationError && (
-              <p className="text-emergency text-xs mt-2 font-medium flex items-center gap-1">
+              <p className="text-emergency text-xs mt-2 font-bold flex items-center gap-1 bg-emergency/10 p-2 rounded-lg">
                 <AlertTriangle size={14} />
                 {validationError}
               </p>
             )}
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-3">{t('sim.docs')}</label>
+            <label className="block text-sm font-bold text-text mb-3">{t('sim.docs')}</label>
             <div className="flex flex-col sm:flex-row gap-3">
               <label className={cn(
-                "flex-1 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
-                docsType === 'official' ? "border-primary bg-primary/5" : "border-gray-200 hover:bg-gray-50"
+                "flex-1 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                docsType === 'official' ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-background hover:bg-surface"
               )}>
                 <input type="radio" name="docs" value="official" checked={docsType === 'official'} onChange={(e) => setDocsType(e.target.value)} className="hidden" />
                 <FileText size={20} className={docsType === 'official' ? "text-primary" : "text-muted"} />
-                <span className={docsType === 'official' ? "font-semibold text-primary" : "text-text"}>{t('sim.docs.official')}</span>
+                <span className={docsType === 'official' ? "font-bold text-primary" : "text-text font-medium"}>{t('sim.docs.official')}</span>
               </label>
               <label className={cn(
-                "flex-1 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
-                docsType === 'informal' ? "border-primary bg-primary/5" : "border-gray-200 hover:bg-gray-50"
+                "flex-1 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                docsType === 'informal' ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-background hover:bg-surface"
               )}>
                 <input type="radio" name="docs" value="informal" checked={docsType === 'informal'} onChange={(e) => setDocsType(e.target.value)} className="hidden" />
                 <FileText size={20} className={docsType === 'informal' ? "text-primary" : "text-muted"} />
-                <span className={docsType === 'informal' ? "font-semibold text-primary" : "text-text"}>{t('sim.docs.informal')}</span>
+                <span className={docsType === 'informal' ? "font-bold text-primary" : "text-text font-medium"}>{t('sim.docs.informal')}</span>
               </label>
               <label className={cn(
-                "flex-1 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
-                docsType === 'none' ? "border-primary bg-primary/5" : "border-gray-200 hover:bg-gray-50"
+                "flex-1 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                docsType === 'none' ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-background hover:bg-surface"
               )}>
                 <input type="radio" name="docs" value="none" checked={docsType === 'none'} onChange={(e) => setDocsType(e.target.value)} className="hidden" />
                 <FileText size={20} className={docsType === 'none' ? "text-primary" : "text-muted"} />
-                <span className={docsType === 'none' ? "font-semibold text-primary" : "text-text"}>{t('sim.docs.none')}</span>
+                <span className={docsType === 'none' ? "font-bold text-primary" : "text-text font-medium"}>{t('sim.docs.none')}</span>
               </label>
             </div>
           </div>
@@ -290,11 +290,11 @@ export default function OutcomeSimulator() {
       )}
 
       {step === 2 && (
-        <div className="bg-surface rounded-2xl p-8 border border-gray-100 shadow-sm text-center min-h-[300px] flex flex-col items-center justify-center">
+        <div className="bg-surface rounded-2xl p-8 border border-border shadow-sm text-center min-h-[300px] flex flex-col items-center justify-center">
           {isSimulating ? (
             <div className="space-y-8 w-full max-w-sm mx-auto">
               <div className="relative w-24 h-24 mx-auto">
-                <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-background rounded-full"></div>
                 <svg className="absolute inset-0 w-full h-full transform -rotate-90">
                   <circle
                     cx="48"
@@ -314,7 +314,7 @@ export default function OutcomeSimulator() {
                 <h3 className="font-bold text-lg mb-2 text-primary animate-in fade-in slide-in-from-bottom-2 duration-300" key={simulationStep}>
                   {SIMULATION_STEPS[simulationStep]?.text}
                 </h3>
-                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-background h-2 rounded-full overflow-hidden border border-border shadow-inner">
                   <div 
                     className="bg-primary h-full transition-all duration-500 ease-out"
                     style={{ width: `${progress}%` }}
@@ -324,23 +324,23 @@ export default function OutcomeSimulator() {
             </div>
           ) : (
             <div className="space-y-6">
-              <AlertTriangle size={48} className="text-warning mx-auto" />
+              <AlertTriangle size={48} className="text-secondary mx-auto" />
               <div>
-                <h3 className="font-bold text-lg mb-2">{t('sim.confirm.title')}</h3>
-                <p className="text-sm text-muted mb-4">
+                <h3 className="font-bold text-lg mb-2 text-text">{t('sim.confirm.title')}</h3>
+                <p className="text-sm text-muted mb-4 leading-relaxed">
                   {t('sim.confirm.desc')}
                 </p>
               </div>
               <div className="flex gap-3">
                 <button 
                   onClick={() => setStep(1)}
-                  className="flex-1 bg-gray-100 text-text font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors"
+                  className="flex-1 bg-background border border-border text-text font-bold py-3 rounded-xl hover:bg-surface transition-all"
                 >
                   {t('sim.edit')}
                 </button>
                 <button 
                   onClick={handleSimulate}
-                  className="flex-1 bg-accent text-surface font-bold py-3 rounded-xl hover:bg-accent/90 transition-colors"
+                  className="flex-1 bg-secondary text-surface font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all shadow-md shadow-secondary/20"
                 >
                   {t('sim.start')}
                 </button>
@@ -353,13 +353,13 @@ export default function OutcomeSimulator() {
       {step === 3 && result !== null && (
         <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
           <div className={cn(
-            "rounded-3xl p-8 text-center text-surface relative overflow-hidden shadow-lg",
-            isUnclear ? "bg-gray-800" :
-            result >= 70 ? "bg-gradient-to-br from-success to-emerald-700" :
-            result < 40 ? "bg-gradient-to-br from-emergency to-red-900" :
-            "bg-gradient-to-br from-accent to-yellow-600"
+            "rounded-3xl p-8 text-center text-surface relative overflow-hidden shadow-xl",
+            isUnclear ? "bg-muted" :
+            result >= 70 ? "bg-gradient-to-br from-success to-[#1B4332]" :
+            result < 40 ? "bg-gradient-to-br from-emergency to-[#7B1D14]" :
+            "bg-gradient-to-br from-secondary to-[#8B7330]"
           )}>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-surface/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
             
             <h3 className="font-medium text-white/80 mb-6 relative z-10">
               {isUnclear ? t('sim.result.unclear') :
@@ -420,8 +420,8 @@ export default function OutcomeSimulator() {
 
           {/* Reasons */}
           {!isUnclear && (
-            <div className="bg-surface rounded-2xl p-6 border border-gray-100 shadow-sm">
-              <h4 className="font-bold mb-4 flex items-center gap-2 text-lg">
+            <div className="bg-surface rounded-2xl p-6 border border-border shadow-sm">
+              <h4 className="font-bold mb-4 flex items-center gap-2 text-lg text-text">
                 <Scale size={20} className="text-primary" />
                 {t('sim.reasons')}
               </h4>
@@ -439,8 +439,8 @@ export default function OutcomeSimulator() {
           )}
 
           {/* Recommended Action */}
-          <div className="bg-surface rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <h4 className="font-bold mb-3 flex items-center gap-2 text-lg">
+          <div className="bg-surface rounded-2xl p-6 border border-border shadow-sm">
+            <h4 className="font-bold mb-3 flex items-center gap-2 text-lg text-text">
               <Gavel size={20} className="text-secondary" />
               {t('sim.action')}
             </h4>
@@ -470,7 +470,7 @@ export default function OutcomeSimulator() {
             onClick={() => isUnclear ? setStep(1) : handleBooking()}
             className={cn(
               "w-full text-surface font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md",
-              isUnclear ? "bg-gray-800 hover:bg-gray-700" :
+              isUnclear ? "bg-muted hover:bg-muted/90" :
               result < 60 ? "bg-emergency hover:bg-emergency/90 animate-pulse" : "bg-primary hover:bg-primary/90"
             )}
           >

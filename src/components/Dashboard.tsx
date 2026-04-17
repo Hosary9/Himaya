@@ -23,17 +23,17 @@ export default function Dashboard() {
       </section>
 
       {/* Daily Smart Legal Tip */}
-      <section className="bg-gradient-to-l from-primary to-[#2a5a9e] rounded-2xl p-5 text-surface shadow-md relative overflow-hidden hover:scale-[1.02] transition-transform duration-300">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+      <section className="bg-gradient-to-l from-primary to-primary/80 rounded-2xl p-5 text-surface shadow-lg relative overflow-hidden transition-all duration-500 border border-primary/20 group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
         <div className="relative z-10 flex gap-4 items-start">
-          <div className="bg-surface/20 p-2 rounded-lg shrink-0">
-            <ShieldCheck size={24} className="text-accent" />
+          <div className="bg-white/20 p-2 rounded-lg shrink-0 backdrop-blur-sm shadow-inner">
+            <ShieldCheck size={24} className="text-secondary" />
           </div>
           <div>
-            <h3 className="font-semibold text-accent mb-1 text-sm flex items-center gap-2">
+            <h3 className="font-bold text-secondary mb-1 text-sm flex items-center gap-2 tracking-wide uppercase">
               {language === 'ar' ? 'نصيحة محامينا اليوم' : 'Mohamina Daily Tip'}
             </h3>
-            <p className="text-sm leading-relaxed opacity-95">
+            <p className="text-sm leading-relaxed opacity-95 font-medium text-white/90">
               {language === 'ar' 
                 ? 'توقيع إيصال أمانة على بياض يعرضك لخطر قانوني كبير حتى مع من تثق بهم. استشر محامياً دائماً قبل التوقيع.' 
                 : 'Signing a blank trust receipt exposes you to significant legal risk even with those you trust. Always consult a lawyer before signing.'}
@@ -106,19 +106,19 @@ export default function Dashboard() {
             <ChevronLeft size={16} className={language === 'en' ? 'rotate-180' : ''} />
           </Link>
         </div>
-        <div className="bg-surface rounded-2xl p-5 border border-gray-100 shadow-sm">
+        <div className="bg-surface rounded-2xl p-5 border border-border shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h4 className="font-bold text-text">{language === 'ar' ? 'دعوى صحة ونفاذ' : 'Validity and Enforceability Lawsuit'}</h4>
               <p className="text-sm text-muted">{language === 'ar' ? 'رقم القضية: 4592 / 2025' : 'Case No: 4592 / 2025'}</p>
             </div>
-            <span className="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded-full font-medium">
+            <span className="bg-secondary/10 text-secondary text-xs px-2 py-1 rounded-full font-bold border border-secondary/20">
               {language === 'ar' ? 'نشطة' : 'Active'}
             </span>
           </div>
           
           <div className="relative pt-4">
-            <div className={cn("absolute top-6 bottom-0 w-0.5 bg-gray-100", language === 'ar' ? "right-3" : "left-3")}></div>
+            <div className={cn("absolute top-6 bottom-0 w-0.5 bg-border rounded-full", language === 'ar' ? "right-3" : "left-3")}></div>
             <div className="space-y-6">
               <TimelineItem
                 status="completed"
@@ -151,20 +151,25 @@ function QuickActionCard({ to, icon, title, subtitle }: { to: string; icon: Reac
   return (
     <Link
       to={to}
-      className="bg-surface p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center gap-2"
+      className="bg-surface p-4 rounded-2xl border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-2 group"
     >
-      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-1">
+      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-300">
         {icon}
       </div>
       <h4 className="font-bold text-sm text-text">{title}</h4>
-      <p className="text-[10px] text-muted">{subtitle}</p>
+      <p className="text-[10px] text-muted font-medium tracking-tight uppercase opacity-80">{subtitle}</p>
     </Link>
   );
 }
 
 function AlertCard({ title, description, time, type }: { title: string; description: string; time: string; type: 'warning' | 'info' }) {
   return (
-    <div className="bg-surface p-4 rounded-xl border border-gray-100 shadow-sm flex gap-3 items-start">
+    <div className={cn(
+      "p-4 rounded-xl border shadow-sm flex gap-3 items-start border-r-4 transition-all hover:shadow-md",
+      type === 'warning' 
+        ? "bg-warning/5 border-border border-r-warning" 
+        : "bg-primary/5 border-border border-r-primary"
+    )}>
       <div className={cn(
         "p-2 rounded-full shrink-0",
         type === 'warning' ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
@@ -173,10 +178,10 @@ function AlertCard({ title, description, time, type }: { title: string; descript
       </div>
       <div className="flex-1">
         <div className="flex justify-between items-start mb-1">
-          <h4 className="font-semibold text-sm">{title}</h4>
-          <span className="text-[10px] text-muted">{time}</span>
+          <h4 className="font-bold text-text text-sm">{title}</h4>
+          <span className="text-[10px] text-muted font-medium">{time}</span>
         </div>
-        <p className="text-xs text-muted leading-relaxed">{description}</p>
+        <p className="text-xs text-muted leading-relaxed font-medium">{description}</p>
       </div>
     </div>
   );

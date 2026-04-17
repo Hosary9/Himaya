@@ -34,13 +34,6 @@ export function ServiceSelectionSheet({ isOpen, onClose, lawyer, onSelectService
       isCustomPrice: true
     },
     {
-      id: 'contract',
-      title: language === 'ar' ? 'مراجعة أو صياغة عقد' : 'Contract Review/Drafting',
-      description: language === 'ar' ? 'تأمين حقوقك في العقود والاتفاقيات المختلفة' : 'Secure your rights in various contracts and agreements',
-      icon: <FileText className="text-success" size={24} />,
-      price: language === 'ar' ? 'تبدأ من 500 ج.م' : 'Starts from 500 EGP'
-    },
-    {
       id: 'written',
       title: language === 'ar' ? 'استشارة مكتوبة' : 'Written Consultation',
       description: language === 'ar' ? 'رد قانوني مفصل وموثق على استفساراتك' : 'Detailed and documented legal response to your inquiries',
@@ -74,7 +67,7 @@ export function ServiceSelectionSheet({ isOpen, onClose, lawyer, onSelectService
             <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 shrink-0" />
 
             {/* Header */}
-            <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100">
+            <div className="px-6 py-4 flex items-center justify-between border-b border-border">
               <div className="flex items-center gap-4">
                 <img 
                   src={lawyer.image} 
@@ -94,7 +87,7 @@ export function ServiceSelectionSheet({ isOpen, onClose, lawyer, onSelectService
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 bg-gray-100 rounded-full text-muted hover:bg-gray-200 transition-colors"
+                className="p-2 bg-surface rounded-full text-muted hover:bg-background transition-colors border border-border"
               >
                 <X size={20} />
               </button>
@@ -109,10 +102,10 @@ export function ServiceSelectionSheet({ isOpen, onClose, lawyer, onSelectService
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => onSelectService(service.id)}
-                  className="w-full group flex items-center gap-4 p-4 bg-surface rounded-2xl border border-gray-100 hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all text-right"
+                  className="w-full group flex items-center gap-4 p-4 bg-surface rounded-2xl border border-border hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all text-right"
                   dir={language === 'ar' ? 'rtl' : 'ltr'}
                 >
-                  <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
+                  <div className="w-14 h-14 rounded-xl bg-background flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
                     {service.icon}
                   </div>
                   
@@ -143,7 +136,7 @@ export function ServiceSelectionSheet({ isOpen, onClose, lawyer, onSelectService
             </div>
 
             {/* Footer */}
-            <div className="p-6 bg-gray-50 border-t border-gray-100">
+            <div className="p-6 bg-surface border-t border-border">
               <p className="text-[10px] text-center text-muted leading-relaxed">
                 {language === 'ar' 
                   ? 'جميع الخدمات القانونية المقدمة تخضع لاتفاقية الاستخدام ونظام حماية الموكل. يتم حجز الرسوم في نظام الضمان حتى إتمام الخدمة.' 

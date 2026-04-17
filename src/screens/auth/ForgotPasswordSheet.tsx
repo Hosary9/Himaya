@@ -56,12 +56,12 @@ export default function ForgotPasswordSheet({ isOpen, onClose }: ForgotPasswordS
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 shadow-2xl"
+            className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-3xl z-50 p-6 shadow-2xl border-t border-border"
             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 24px)' }}
           >
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6" />
+            <div className="w-12 h-1.5 bg-border rounded-full mx-auto mb-6" />
             
-            <button onClick={onClose} className="absolute top-6 left-6 text-gray-400 hover:text-gray-600">
+            <button onClick={onClose} className="absolute top-6 left-6 text-muted hover:text-text">
               <X size={24} />
             </button>
 
@@ -76,15 +76,15 @@ export default function ForgotPasswordSheet({ isOpen, onClose }: ForgotPasswordS
                     className="flex flex-col gap-4"
                   >
                     <div className="text-center mb-2">
-                      <h2 className="text-2xl font-bold text-[#1C2B3A] mb-2">إعادة تعيين كلمة المرور</h2>
-                      <p className="text-[#6B7C8D]">هنبعتلك لينك إعادة التعيين على بريدك</p>
+                      <h2 className="text-2xl font-bold text-text mb-2">إعادة تعيين كلمة المرور</h2>
+                      <p className="text-muted">هنبعتلك لينك إعادة التعيين على بريدك</p>
                     </div>
 
                     {error && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="bg-[#B03A2E]/15 border border-[#B03A2E] text-[#B03A2E] p-3 rounded-xl flex items-center gap-2 text-sm font-bold overflow-hidden"
+                        className="bg-emergency/15 border border-emergency text-emergency p-3 rounded-xl flex items-center gap-2 text-sm font-bold overflow-hidden"
                       >
                         <span>⚠️</span>
                         <span>{error}</span>
@@ -96,14 +96,13 @@ export default function ForgotPasswordSheet({ isOpen, onClose }: ForgotPasswordS
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="البريد الإلكتروني"
-                      className="w-full bg-transparent border border-[#E8E0D0] rounded-xl py-4 px-4 focus:outline-none focus:ring-2 focus:ring-[#C9A84C] focus:border-[#C9A84C] text-right dir-rtl transition-all"
+                      className="w-full bg-transparent border border-border rounded-xl py-4 px-4 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary text-right dir-rtl transition-all text-text"
                     />
 
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={handleReset}
-                      className="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-all hover:opacity-90 mt-2"
-                      style={{ backgroundColor: '#1A3A5C' }}
+                      className="w-full text-surface font-bold py-4 rounded-xl shadow-lg bg-primary hover:bg-primary/90 mt-2 transition-all"
                     >
                       إرسال رابط الاسترداد
                     </motion.button>
@@ -118,8 +117,8 @@ export default function ForgotPasswordSheet({ isOpen, onClose }: ForgotPasswordS
                     exit={{ opacity: 0, scale: 0.8 }}
                     className="flex flex-col items-center justify-center py-8"
                   >
-                    <div className="w-12 h-12 border-4 border-[#C9A84C] border-t-transparent rounded-full animate-spin mb-4" />
-                    <p className="text-[#1A3A5C] font-bold text-lg">جاري الإرسال...</p>
+                    <div className="w-12 h-12 border-4 border-secondary border-t-transparent rounded-full animate-spin mb-4" />
+                    <p className="text-primary font-bold text-lg">جاري الإرسال...</p>
                   </motion.div>
                 )}
 
@@ -136,17 +135,16 @@ export default function ForgotPasswordSheet({ isOpen, onClose }: ForgotPasswordS
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.2, type: 'spring', bounce: 0.6 }}
                     >
-                      <CheckCircle2 size={80} className="text-[#2D6A4F] mb-4" />
+                      <CheckCircle2 size={80} className="text-success mb-4" />
                     </motion.div>
-                    <h3 className="text-2xl font-bold text-[#1C2B3A] mb-2">تم الإرسال بنجاح!</h3>
-                    <p className="text-[#6B7C8D] mb-2">افتح بريدك وضغط على اللينك</p>
-                    <p className="text-[#C9A84C] font-bold mb-8">{email}</p>
+                    <h3 className="text-2xl font-bold text-text mb-2">تم الإرسال بنجاح!</h3>
+                    <p className="text-muted mb-2">افتح بريدك وضغط على اللينك</p>
+                    <p className="text-secondary font-bold mb-8">{email}</p>
                     
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={onClose}
-                      className="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-all hover:opacity-90"
-                      style={{ backgroundColor: '#1A3A5C' }}
+                      className="w-full text-surface font-bold py-4 rounded-xl shadow-lg bg-primary hover:bg-primary/90 transition-all"
                     >
                       إغلاق
                     </motion.button>

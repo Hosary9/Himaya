@@ -7,7 +7,6 @@ import {
   FileText, 
   Lock,
 } from 'lucide-react';
-import COLORS from '../theme/colors';
 import GuestRestrictionModal from '../components/GuestRestrictionModal';
 
 export default function GuestHomeScreen() {
@@ -21,7 +20,7 @@ export default function GuestHomeScreen() {
       desc: 'تحدث مع مساعدنا القانوني', 
       icon: <MessageSquare size={32} />, 
       path: '/app/ai-assistant',
-      color: COLORS.primary,
+      colorClass: 'text-primary bg-primary/10',
       locked: true
     },
     { 
@@ -30,17 +29,8 @@ export default function GuestHomeScreen() {
       desc: 'اعرف حقوقك القانونية', 
       icon: <BookOpen size={32} />, 
       path: '/app/rights',
-      color: COLORS.gold,
+      colorClass: 'text-gold bg-gold/10',
       locked: false
-    },
-    { 
-      id: 'contracts', 
-      title: 'صياغة العقود', 
-      desc: 'نماذج عقود جاهزة', 
-      icon: <FileText size={32} />, 
-      path: '/app/contracts',
-      color: COLORS.success,
-      locked: true
     },
     { 
       id: 'simulator', 
@@ -48,7 +38,7 @@ export default function GuestHomeScreen() {
       desc: 'توقع نتيجة قضيتك', 
       icon: <Scale size={32} />, 
       path: '/app/simulator',
-      color: COLORS.dark,
+      colorClass: 'text-text bg-background',
       locked: true
     },
   ];
@@ -63,11 +53,11 @@ export default function GuestHomeScreen() {
 
   return (
     <div className="flex flex-col">
-      <main className="flex-1 space-y-6 w-full">
+      <main className="flex-1 space-y-6 w-full p-4 md:p-6">
         {/* Welcome Section */}
         <section>
-          <h2 className="text-2xl font-bold mb-2 text-right" style={{ color: COLORS.text }}>أهلاً بك يا ضيفنا</h2>
-          <p className="text-sm text-right" style={{ color: COLORS.muted }}>تصفح خدماتنا المتاحة للجميع</p>
+          <h2 className="text-2xl font-bold mb-2 text-right text-text">أهلاً بك يا ضيفنا</h2>
+          <p className="text-sm text-right text-muted">تصفح خدماتنا المتاحة للجميع</p>
         </section>
 
         {/* Feature Cards Grid */}
@@ -76,22 +66,19 @@ export default function GuestHomeScreen() {
             <button 
               key={feature.id}
               onClick={() => handleAction(feature)}
-              className="bg-white p-6 rounded-3xl shadow-sm border transition-all text-right flex flex-col items-start gap-4 relative overflow-hidden group"
-              style={{ 
-                borderColor: COLORS.border,
-              }}
+              className="bg-surface p-6 rounded-3xl shadow-sm border border-border hover:border-primary transition-all text-right flex flex-col items-start gap-4 relative overflow-hidden group"
             >
               {feature.locked && (
-                <div className="absolute top-4 left-4 bg-gray-100 p-1.5 rounded-lg text-gray-500">
+                <div className="absolute top-4 left-4 bg-background p-1.5 rounded-lg text-muted">
                   <Lock size={16} />
                 </div>
               )}
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: `${feature.color}10`, color: feature.color }}>
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${feature.colorClass}`}>
                 {feature.icon}
               </div>
               <div>
-                <h3 className="text-lg font-bold mb-1" style={{ color: COLORS.text }}>{feature.title}</h3>
-                <p className="text-sm" style={{ color: COLORS.muted }}>{feature.desc}</p>
+                <h3 className="text-lg font-bold mb-1 text-text">{feature.title}</h3>
+                <p className="text-sm text-muted">{feature.desc}</p>
               </div>
             </button>
           ))}

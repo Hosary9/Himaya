@@ -6,7 +6,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import { AnimatePresence } from "motion/react";
 import Layout from "./components/Layout";
 import Dashboard from "./components/Dashboard";
@@ -14,7 +14,6 @@ import LawyerSearch from "./components/LawyerSearch";
 import AIAssistant from "./components/AIAssistant";
 import OutcomeSimulator from "./components/OutcomeSimulator";
 import KnowYourRights from "./components/KnowYourRights";
-import ContractDrafting from "./components/ContractDrafting";
 import MyCases from "./components/MyCases";
 import SettingsScreen from "./screens/SettingsScreen";
 import { LanguageProvider } from "./lib/i18n";
@@ -24,21 +23,20 @@ import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import ClientHomeScreen from "./screens/ClientHomeScreen";
 import GuestHomeScreen from "./screens/GuestHomeScreen";
+import LawyerHomeScreen from "./screens/LawyerHomeScreen";
+import LawyerProfileScreen from "./screens/LawyerProfileScreen";
 import RoleSelectionScreen from "./screens/RoleSelectionScreen";
-
-import ContractTypeScreen from "./screens/contracts/ContractTypeScreen";
-import ContractFormScreen from "./screens/contracts/ContractFormScreen";
-import ContractLoadingScreen from "./screens/contracts/ContractLoadingScreen";
-import ContractResultScreen from "./screens/contracts/ContractResultScreen";
 
 // Add AuthContext
 export const AuthContext = React.createContext<{ 
   user: User | null; 
+  role: string | null;
   loading: boolean;
   isGuest: boolean;
   setGuest: (val: boolean) => void;
 }>({ 
   user: null, 
+  role: null,
   loading: true, 
   isGuest: false, 
   setGuest: () => {} 
@@ -46,6 +44,7 @@ export const AuthContext = React.createContext<{
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [splashFinished, setSplashFinished] = useState(false);
   const [isGuest, setIsGuest] = useState(() => localStorage.getItem('isGuest') === 'true');
@@ -54,27 +53,38 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
     setIsGuest(val);
     if (val) {
       localStorage.setItem('isGuest', 'true');
+      setLoading(false);
     } else {
       localStorage.removeItem('isGuest');
     }
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        setGuest(false); // Clear guest mode if user logs in
-      }
-      setLoading(false);
-    });
-
-    // Initialize dark mode
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        setGuest(false); // Clear guest mode if user logs in
+        try {
+          const { doc, getDoc } = await import('firebase/firestore');
+          const d = await getDoc(doc(db, 'users', currentUser.uid));
+          if (d.exists()) {
+            setRole(d.data().role);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        setRole(null);
+      }
+      setLoading(false);
+    });
 
     return () => unsubscribe();
   }, []);
@@ -84,7 +94,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, isGuest, setGuest }}>
+    <AuthContext.Provider value={{ user, role, loading, isGuest, setGuest }}>
       {children}
     </AuthContext.Provider>
   );
@@ -99,8 +109,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function HomeSwitcher() {
-  const { isGuest } = React.useContext(AuthContext);
-  return isGuest ? <GuestHomeScreen /> : <ClientHomeScreen />;
+  const { isGuest, role } = React.useContext(AuthContext);
+
+  if (isGuest) return <GuestHomeScreen />;
+  if (role === 'lawyer') return <LawyerHomeScreen />;
+  return <ClientHomeScreen />;
 }
 
 function AnimatedRoutes() {
@@ -117,12 +130,6 @@ function AnimatedRoutes() {
         <Route path="/role-selection" element={<RoleSelectionScreen />} />
         <Route path="/developer-admin" element={<AdminPortal />} />
         <Route path="/dashboard" element={<Navigate to="/app" replace />} />
-        
-        {/* Contract Flow Routes */}
-        <Route path="/contracts/type" element={<ContractTypeScreen />} />
-        <Route path="/contracts/form" element={<ContractFormScreen />} />
-        <Route path="/contracts/loading" element={<ContractLoadingScreen />} />
-        <Route path="/contracts/result" element={<ContractResultScreen />} />
 
         <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<HomeSwitcher />} />
@@ -130,9 +137,9 @@ function AnimatedRoutes() {
           <Route path="ai-assistant" element={<AIAssistant />} />
           <Route path="simulator" element={<OutcomeSimulator />} />
           <Route path="rights" element={<KnowYourRights />} />
-          <Route path="contracts" element={<ContractDrafting />} />
           <Route path="cases" element={<MyCases />} />
           <Route path="settings" element={<SettingsScreen />} />
+          <Route path="lawyer-profile" element={<LawyerProfileScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

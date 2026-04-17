@@ -203,7 +203,7 @@ export default function AIAssistant() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] animate-in fade-in duration-500">
-      <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200 shrink-0">
+      <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border shrink-0">
         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
           <Bot size={28} />
         </div>
@@ -232,23 +232,23 @@ export default function AIAssistant() {
             )}
           >
             <div className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-auto",
-              msg.role === 'user' ? "bg-gray-200 text-gray-600" : "bg-primary text-surface"
+              "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-auto shadow-sm",
+              msg.role === 'user' ? "bg-background border border-border text-muted" : "bg-primary text-surface"
             )}>
               {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
             </div>
             <div className={cn(
-              "p-3 rounded-2xl relative",
+              "p-3 rounded-2xl relative shadow-sm",
               msg.role === 'user' 
                 ? cn("bg-primary text-surface", language === 'ar' ? "rounded-br-sm" : "rounded-bl-sm") 
-                : cn("bg-surface border border-gray-100 shadow-sm", language === 'ar' ? "rounded-bl-sm" : "rounded-br-sm")
+                : cn("bg-surface border border-border", language === 'ar' ? "rounded-bl-sm" : "rounded-br-sm")
             )}>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
               
               {msg.action === 'lawyers' && (
                 <button 
                   onClick={() => handleAction('lawyers', msg.specialty)}
-                  className="mt-3 w-full bg-secondary text-surface py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-secondary/90 transition-colors"
+                  className="mt-3 w-full bg-secondary text-surface py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-secondary/90 transition-colors shadow-sm"
                 >
                   <CheckCircle2 size={16} />
                   {language === 'ar' ? 'نعم، اعرض المحامين' : 'Yes, show lawyers'}
@@ -258,7 +258,7 @@ export default function AIAssistant() {
               {msg.action === 'support' && (
                 <button 
                   onClick={() => handleAction('support')}
-                  className="mt-3 w-full bg-gray-100 text-text py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                  className="mt-3 w-full bg-background/50 hover:bg-background text-text py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors border border-border hover:border-primary shadow-sm"
                 >
                   <Phone size={16} />
                   {language === 'ar' ? 'التواصل مع الدعم' : 'Contact Support'}
@@ -267,19 +267,19 @@ export default function AIAssistant() {
 
               {msg.action === 'escalation_panel' && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button className="bg-primary/10 text-primary py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-primary/20 transition-colors">
+                  <button className="bg-primary/10 text-primary py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-primary/20 transition-colors border border-primary/20">
                     <MessageSquare size={14} />
                     {language === 'ar' ? 'محادثة مباشرة' : 'Live Chat'}
                   </button>
-                  <button className="bg-primary/10 text-primary py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-primary/20 transition-colors">
+                  <button className="bg-primary/10 text-primary py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-primary/20 transition-colors border border-primary/20">
                     <Phone size={14} />
                     {language === 'ar' ? 'اتصل بنا' : 'Call Us'}
                   </button>
-                  <button className="bg-[#25D366]/10 text-[#25D366] py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-[#25D366]/20 transition-colors">
+                  <button className="bg-[#25D366]/10 text-[#25D366] py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-[#25D366]/20 transition-colors border border-[#25D366]/20">
                     <MessageCircle size={14} />
                     {language === 'ar' ? 'واتساب' : 'WhatsApp'}
                   </button>
-                  <button className="bg-secondary/10 text-secondary py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-secondary/20 transition-colors">
+                  <button className="bg-secondary/10 text-secondary py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-secondary/20 transition-colors border border-secondary/20">
                     <PhoneCall size={14} />
                     {language === 'ar' ? 'طلب معاودة الاتصال' : 'Request Callback'}
                   </button>
@@ -288,7 +288,7 @@ export default function AIAssistant() {
 
               <span className={cn(
                 "text-[10px] block mt-2",
-                msg.role === 'user' ? "text-primary-100 opacity-70" : "text-muted"
+                msg.role === 'user' ? "text-surface/70" : "text-muted"
               )}>
                 {msg.timestamp}
               </span>
@@ -301,7 +301,7 @@ export default function AIAssistant() {
             <div className="w-8 h-8 rounded-full bg-primary text-surface flex items-center justify-center shrink-0 mt-auto">
               <Bot size={16} />
             </div>
-            <div className={cn("p-4 rounded-2xl bg-surface border border-gray-100 shadow-sm flex items-center gap-1", language === 'ar' ? "rounded-bl-sm" : "rounded-br-sm")}>
+            <div className={cn("p-4 rounded-2xl bg-surface border border-border shadow-sm flex items-center gap-1", language === 'ar' ? "rounded-bl-sm" : "rounded-br-sm")}>
               <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
               <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
               <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -312,18 +312,18 @@ export default function AIAssistant() {
       </div>
 
       {/* Input Area */}
-      <div className="pt-4 border-t border-gray-200 shrink-0 bg-background relative">
+      <div className="pt-4 border-t border-border shrink-0 bg-background relative">
         {isGuest && (
-          <div className="absolute inset-0 bg-surface/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-t-2xl">
-            <div className="bg-surface border border-gray-100 shadow-lg rounded-xl px-4 py-2 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-              <Lock size={16} className="text-muted" />
-              <span className="text-sm font-medium text-muted">
+          <div className="absolute inset-0 bg-surface/80 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-t-2xl">
+            <div className="bg-surface border border-border shadow-lg rounded-xl px-4 py-2 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+              <Lock size={16} className="text-secondary" />
+              <span className="text-sm font-bold text-text">
                 {language === 'ar' ? 'سجل دخولك لتتمكن من المحادثة' : 'Sign in to start chatting'}
               </span>
             </div>
           </div>
         )}
-        <div className="flex items-center gap-2 bg-surface border border-gray-200 rounded-full p-1 pl-2 pr-4 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+        <div className="flex items-center gap-2 bg-surface border border-border rounded-full p-1 pl-2 pr-4 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
           <button className="p-2 text-muted hover:text-primary transition-colors">
             <Paperclip size={20} />
           </button>
@@ -333,13 +333,13 @@ export default function AIAssistant() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={language === 'ar' ? "اكتب مشكلتك القانونية هنا..." : "Type your legal problem here..."}
-            className="flex-1 bg-transparent py-3 focus:outline-none text-sm"
+            className="flex-1 bg-transparent py-3 focus:outline-none text-sm text-text placeholder:text-muted"
           />
           <button 
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
             className={cn(
-              "w-10 h-10 rounded-full bg-primary text-surface flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors",
+              "w-10 h-10 rounded-full bg-primary text-surface flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors shadow-md shadow-primary/20",
               language === 'ar' ? "" : "rotate-180"
             )}
           >

@@ -303,28 +303,28 @@ export default function SettingsScreen() {
   const strength = getPasswordStrength();
 
   return (
-    <div className="p-6 max-w-2xl mx-auto pb-24 dark:bg-[#0F2540] transition-colors min-h-screen" dir="rtl">
-      <h1 className="text-2xl font-bold mb-8 dark:text-white" style={{ color: COLORS.text }}>{t('settings.title') || 'الإعدادات'}</h1>
+    <div className="p-6 max-w-2xl mx-auto pb-24 transition-colors min-h-screen bg-background" dir="rtl">
+      <h1 className="text-2xl font-bold mb-8 text-text">{t('settings.title') || 'الإعدادات'}</h1>
       
       <div className="space-y-8">
         {sections.map((section, idx) => (
           <section key={idx}>
-            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">{section.title}</h2>
+            <h2 className="text-sm font-bold text-muted uppercase tracking-wider mb-4">{section.title}</h2>
             <div className="space-y-2">
               {section.items.map((item, i) => (
                 <div key={i}>
                   <button 
                     onClick={() => item.path ? navigate(item.path) : item.action?.()}
                     disabled={item.disabled}
-                    className={`w-full flex items-center justify-between p-4 bg-white dark:bg-[#1A3A5C] rounded-xl shadow-sm border border-[#E8E0D0] dark:border-white/10 hover:border-[#C9A84C] transition-colors ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-full flex items-center justify-between p-4 bg-surface rounded-xl shadow-sm border border-border hover:border-gold transition-colors ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center gap-3">
-                      <div style={{ color: item.color || COLORS.primary }} className="dark:text-[#C9A84C]">{item.icon}</div>
-                      <span className={`font-medium dark:text-white ${item.color || 'text-gray-800'}`}>{item.label}</span>
+                      <div className="text-primary">{item.icon}</div>
+                      <span className={`font-medium ${item.color ? 'text-emergency' : 'text-text'}`}>{item.label}</span>
                     </div>
-                    {item.type !== 'toggle' && !item.isPassword && !item.isPhone && !item.isProfile && !item.isReport && <ChevronLeft size={20} className="text-gray-400" />}
+                    {item.type !== 'toggle' && !item.isPassword && !item.isPhone && !item.isProfile && !item.isReport && <ChevronLeft size={20} className="text-muted" />}
                     {item.type === 'toggle' && (
-                      <div className={`w-12 h-6 rounded-full relative transition-colors ${item.active ? 'bg-[#C9A84C]' : 'bg-gray-200 dark:bg-gray-600'}`}>
+                      <div className={`w-12 h-6 rounded-full relative transition-colors ${item.active ? 'bg-gold' : 'bg-gray-300'}`}>
                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${item.active ? 'left-1' : 'left-7'}`} />
                       </div>
                     )}
@@ -339,30 +339,30 @@ export default function SettingsScreen() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden mt-2"
                       >
-                        <div className="p-4 bg-white dark:bg-[#1A3A5C] rounded-[16px] border border-[#E8E0D0] dark:border-white/10 shadow-sm space-y-4">
+                        <div className="p-4 bg-surface rounded-[16px] border border-border shadow-sm space-y-4">
                           <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-gray-100 dark:bg-black/20 rounded-full flex items-center justify-center text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 cursor-pointer hover:border-[#C9A84C] transition-colors">
+                            <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center text-muted border border-dashed border-border cursor-pointer hover:border-gold transition-colors">
                               <Upload size={24} />
                             </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <div className="text-sm text-muted">
                               اضغط لتغيير الصورة الشخصية
                             </div>
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">الاسم بالكامل</label>
-                            <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C]" />
+                            <label className="block text-sm font-bold text-text mb-1">الاسم بالكامل</label>
+                            <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold" />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">البريد الإلكتروني</label>
-                            <input type="email" value={editEmail} readOnly className="w-full bg-gray-50 dark:bg-black/20 border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-gray-500 dark:text-gray-400 outline-none cursor-not-allowed" dir="ltr" />
+                            <label className="block text-sm font-bold text-text mb-1">البريد الإلكتروني</label>
+                            <input type="email" value={editEmail} readOnly className="w-full bg-background border border-border rounded-xl p-3 text-muted outline-none cursor-not-allowed" dir="ltr" />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">نبذة (اختياري)</label>
-                            <textarea value={editBio} onChange={e => setEditBio(e.target.value)} rows={3} className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C] resize-none" placeholder="اكتب نبذة قصيرة عنك..."></textarea>
+                            <label className="block text-sm font-bold text-text mb-1">نبذة (اختياري)</label>
+                            <textarea value={editBio} onChange={e => setEditBio(e.target.value)} rows={3} className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold resize-none" placeholder="اكتب نبذة قصيرة عنك..."></textarea>
                           </div>
                           <div className="flex gap-3 pt-2">
-                            <button onClick={saveProfile} className="flex-1 bg-[#1A3A5C] hover:bg-[#0F2540] text-white font-bold py-3 rounded-xl transition-colors">حفظ التغييرات</button>
-                            <button onClick={() => setShowProfileForm(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-[#1C2B3A] dark:text-white font-bold py-3 rounded-xl transition-colors">إلغاء</button>
+                            <button onClick={saveProfile} className="flex-1 bg-primary hover:bg-opacity-90 text-surface font-bold py-3 rounded-xl transition-colors">حفظ التغييرات</button>
+                            <button onClick={() => setShowProfileForm(false)} className="flex-1 bg-background hover:bg-opacity-80 text-text font-bold py-3 rounded-xl transition-colors">إلغاء</button>
                           </div>
                         </div>
                       </motion.div>
@@ -378,25 +378,25 @@ export default function SettingsScreen() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden mt-2"
                       >
-                        <div className="p-4 bg-white dark:bg-[#1A3A5C] rounded-[16px] border border-[#E8E0D0] dark:border-white/10 shadow-sm space-y-4">
+                        <div className="p-4 bg-surface rounded-[16px] border border-border shadow-sm space-y-4">
                           <div id="recaptcha-container"></div>
                           {phoneError && (
-                            <div className="text-[#B03A2E] text-sm font-bold bg-[#B03A2E]/10 p-2 rounded-lg">{phoneError}</div>
+                            <div className="text-emergency text-sm font-bold bg-emergency/10 p-2 rounded-lg">{phoneError}</div>
                           )}
                           
                           {!isOtpSent ? (
                             <>
                               <div>
-                                <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">رقم الهاتف الحالي</label>
-                                <input type="text" value={currentPhone} readOnly className="w-full bg-gray-50 dark:bg-black/20 border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-gray-500 dark:text-gray-400 outline-none" dir="ltr" />
+                                <label className="block text-sm font-bold text-text mb-1">رقم الهاتف الحالي</label>
+                                <input type="text" value={currentPhone} readOnly className="w-full bg-background border border-border rounded-xl p-3 text-muted outline-none" dir="ltr" />
                               </div>
                               <div>
-                                <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">رقم الهاتف الجديد</label>
-                                <input type="tel" value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C]" dir="ltr" />
+                                <label className="block text-sm font-bold text-text mb-1">رقم الهاتف الجديد</label>
+                                <input type="tel" value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold" dir="ltr" />
                               </div>
                               <div>
-                                <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">تأكيد رقم الهاتف الجديد</label>
-                                <input type="tel" value={confirmPhone} onChange={e => setConfirmPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C]" dir="ltr" />
+                                <label className="block text-sm font-bold text-text mb-1">تأكيد رقم الهاتف الجديد</label>
+                                <input type="tel" value={confirmPhone} onChange={e => setConfirmPhone(e.target.value)} placeholder="01XXXXXXXXX" className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold" dir="ltr" />
                               </div>
                               <div className="flex gap-3 pt-2">
                                 <button onClick={sendOtp} disabled={isSendingCode} className="flex-1 bg-[#1A3A5C] hover:bg-[#0F2540] disabled:bg-gray-400 text-white font-bold py-3 rounded-xl transition-colors">
@@ -406,11 +406,11 @@ export default function SettingsScreen() {
                               </div>
                             </>
                           ) : (
-                            <div dir="rtl" className="mt-4 p-4 rounded-[16px] border-2" style={{ borderColor: 'rgb(232, 224, 208)' }}>
-                              <p className="text-sm text-[#1C2B3A] dark:text-gray-300 font-bold mb-1">
+                            <div dir="rtl" className="mt-4 p-4 rounded-xl border-2 border-border">
+                              <p className="text-sm text-text font-bold mb-1">
                                 تم إرسال كود التحقق على:
                               </p>
-                              <p className="text-[#C9A84C] font-bold mb-3" dir="ltr" style={{ textAlign: 'right' }}>
+                              <p className="text-gold font-bold mb-3" dir="ltr" style={{ textAlign: 'right' }}>
                                 +2{newPhone} 📱
                               </p>
 
@@ -421,24 +421,20 @@ export default function SettingsScreen() {
                                 inputMode="numeric"
                                 maxLength={6}
                                 placeholder="• • • • • •"
-                                className="w-full border-2 rounded-xl py-3 px-4 text-center tracking-widest text-xl outline-none dark:bg-transparent dark:text-white"
-                                style={{ borderColor: 'rgb(232, 224, 208)' }}
+                                className="w-full border-2 border-border rounded-xl py-3 px-4 text-center tracking-widest text-xl outline-none bg-transparent text-text focus:border-gold"
                               />
 
                               <button
                                 onClick={verifyOtp}
                                 disabled={otpCode.length < 6 || isVerifying}
-                                className="w-full mt-3 py-3 rounded-xl text-white font-bold transition-colors"
-                                style={{
-                                  backgroundColor: otpCode.length === 6 ? '#1A3A5C' : '#9CA3AF'
-                                }}
+                                className="w-full mt-3 py-3 rounded-xl text-surface font-bold transition-colors bg-primary hover:bg-opacity-90 disabled:bg-gray-400 disabled:opacity-50"
                               >
                                 {isVerifying ? 'جاري التحقق...' : 'تأكيد الكود ✅'}
                               </button>
 
-                              <p className="text-center text-sm mt-3 text-[#6B7C8D] dark:text-gray-400">
+                              <p className="text-center text-sm mt-3 text-muted">
                                 لم يصلك الكود؟
-                                <button onClick={resendCode} className="text-[#C9A84C] font-bold underline mr-1">
+                                <button onClick={resendCode} className="text-gold font-bold underline mr-1 hover:opacity-80">
                                   إعادة الإرسال
                                 </button>
                               </p>
@@ -458,31 +454,31 @@ export default function SettingsScreen() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden mt-2"
                       >
-                        <div className="p-4 bg-white dark:bg-[#1A3A5C] rounded-[16px] border border-[#E8E0D0] dark:border-white/10 shadow-sm space-y-4">
+                        <div className="p-4 bg-surface rounded-[16px] border border-border shadow-sm space-y-4">
                           {passwordError && (
-                            <div className="text-[#B03A2E] text-sm font-bold bg-[#B03A2E]/10 p-2 rounded-lg">{passwordError}</div>
+                            <div className="text-emergency text-sm font-bold bg-emergency/10 p-2 rounded-lg">{passwordError}</div>
                           )}
                           <div>
-                            <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">كلمة المرور الحالية</label>
-                            <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C]" dir="ltr" />
+                            <label className="block text-sm font-bold text-text mb-1">كلمة المرور الحالية</label>
+                            <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold" dir="ltr" />
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">كلمة المرور الجديدة</label>
-                            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C]" dir="ltr" />
+                            <label className="block text-sm font-bold text-text mb-1">كلمة المرور الجديدة</label>
+                            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold" dir="ltr" />
                             <div className="mt-2 flex items-center gap-2">
-                              <div className="flex-1 h-1.5 bg-[#E8E0D0] dark:bg-white/10 rounded-full overflow-hidden">
+                              <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
                                 <motion.div animate={{ width: strength.width, backgroundColor: strength.color }} className="h-full transition-all" />
                               </div>
                               <span className="text-xs font-bold w-12 text-left" style={{ color: strength.color }}>{strength.text}</span>
                             </div>
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">تأكيد كلمة المرور الجديدة</label>
-                            <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C]" dir="ltr" />
+                            <label className="block text-sm font-bold text-text mb-1">تأكيد كلمة المرور الجديدة</label>
+                            <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold" dir="ltr" />
                           </div>
                           <div className="flex gap-3 pt-2">
-                            <button onClick={changePassword} className="flex-1 bg-[#1A3A5C] hover:bg-[#0F2540] text-white font-bold py-3 rounded-xl transition-colors">تغيير</button>
-                            <button onClick={() => setShowPasswordForm(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-[#1C2B3A] dark:text-white font-bold py-3 rounded-xl transition-colors">إلغاء</button>
+                            <button onClick={changePassword} disabled={!currentPassword || !newPassword || newPassword !== confirmPassword} className="flex-1 bg-primary hover:bg-opacity-90 disabled:opacity-50 text-surface font-bold py-3 rounded-xl transition-colors">تغيير</button>
+                            <button onClick={() => setShowPasswordForm(false)} className="flex-1 bg-background hover:bg-opacity-80 text-text font-bold py-3 rounded-xl transition-colors">إلغاء</button>
                           </div>
                         </div>
                       </motion.div>
@@ -498,23 +494,23 @@ export default function SettingsScreen() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden mt-2"
                       >
-                        <div className="p-4 bg-white dark:bg-[#1A3A5C] rounded-[16px] border border-[#E8E0D0] dark:border-white/10 shadow-sm space-y-4">
+                        <div className="p-4 bg-surface rounded-[16px] border border-border shadow-sm space-y-4">
                           <div>
-                            <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">نوع المشكلة</label>
-                            <select value={reportType} onChange={e => setReportType(e.target.value)} className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C]">
-                              <option value="مشكلة تقنية" className="dark:bg-[#1A3A5C]">مشكلة تقنية</option>
-                              <option value="مشكلة مع محامي" className="dark:bg-[#1A3A5C]">مشكلة مع محامي</option>
-                              <option value="مشكلة في الدفع" className="dark:bg-[#1A3A5C]">مشكلة في الدفع</option>
-                              <option value="أخرى" className="dark:bg-[#1A3A5C]">أخرى</option>
+                            <label className="block text-sm font-bold text-text mb-1">نوع المشكلة</label>
+                            <select value={reportType} onChange={e => setReportType(e.target.value)} className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold">
+                              <option value="مشكلة تقنية" className="bg-surface">مشكلة تقنية</option>
+                              <option value="مشكلة مع محامي" className="bg-surface">مشكلة مع محامي</option>
+                              <option value="مشكلة في الدفع" className="bg-surface">مشكلة في الدفع</option>
+                              <option value="أخرى" className="bg-surface">أخرى</option>
                             </select>
                           </div>
                           <div>
-                            <label className="block text-sm font-bold text-[#1C2B3A] dark:text-gray-300 mb-1">وصف المشكلة</label>
-                            <textarea value={reportDesc} onChange={e => setReportDesc(e.target.value)} rows={4} className="w-full bg-transparent border border-[#E8E0D0] dark:border-white/10 rounded-xl p-3 text-[#1C2B3A] dark:text-white outline-none focus:border-[#C9A84C] resize-none" placeholder="اشرح المشكلة بالتفصيل..."></textarea>
+                            <label className="block text-sm font-bold text-text mb-1">وصف المشكلة</label>
+                            <textarea value={reportDesc} onChange={e => setReportDesc(e.target.value)} rows={4} className="w-full bg-transparent border border-border rounded-xl p-3 text-text outline-none focus:border-gold resize-none" placeholder="اشرح المشكلة بالتفصيل..."></textarea>
                           </div>
                           <div className="flex gap-3 pt-2">
-                            <button onClick={submitReport} className="flex-1 bg-[#1A3A5C] hover:bg-[#0F2540] text-white font-bold py-3 rounded-xl transition-colors">إرسال البلاغ</button>
-                            <button onClick={() => setShowReportForm(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-[#1C2B3A] dark:text-white font-bold py-3 rounded-xl transition-colors">إلغاء</button>
+                            <button onClick={submitReport} className="flex-1 bg-emergency hover:bg-opacity-90 text-surface font-bold py-3 rounded-xl transition-colors">إرسال البلاغ</button>
+                            <button onClick={() => setShowReportForm(false)} className="flex-1 bg-background hover:bg-opacity-80 text-text font-bold py-3 rounded-xl transition-colors">إلغاء</button>
                           </div>
                         </div>
                       </motion.div>
@@ -543,30 +539,30 @@ export default function SettingsScreen() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-white dark:bg-[#0F2540] rounded-2xl w-full max-w-md overflow-hidden shadow-xl"
+              className="bg-surface rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-border"
             >
-              <div className="p-4 border-b border-[#E8E0D0] dark:border-white/10 flex justify-between items-center bg-[#F8F5EF] dark:bg-[#1A3A5C]">
-                <h3 className="font-bold text-lg text-[#1C2B3A] dark:text-white">مركز المساعدة</h3>
-                <button onClick={() => setShowHelpModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
+              <div className="p-4 border-b border-border flex justify-between items-center bg-background">
+                <h3 className="font-bold text-lg text-text">مركز المساعدة</h3>
+                <button onClick={() => setShowHelpModal(false)} className="text-muted hover:text-text">
                   <X size={24} />
                 </button>
               </div>
               <div className="p-6 space-y-6">
                 <div>
-                  <h4 className="font-bold text-[#1A3A5C] dark:text-[#C9A84C] mb-2">س: كيف أحجز محامي؟</h4>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">ج: ابحث عن محامي في قسم "البحث عن محامي" واضغط على زر "احجز الآن" في ملفه الشخصي.</p>
+                  <h4 className="font-bold text-primary mb-2">س: كيف أحجز محامي؟</h4>
+                  <p className="text-muted text-sm leading-relaxed">ج: ابحث عن محامي في قسم "البحث عن محامي" واضغط على زر "احجز الآن" في ملفه الشخصي.</p>
                 </div>
                 <div>
-                  <h4 className="font-bold text-[#1A3A5C] dark:text-[#C9A84C] mb-2">س: كيف أتابع قضيتي؟</h4>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">ج: يمكنك متابعة جميع قضاياك من قسم "قضاياي" في القائمة الرئيسية.</p>
+                  <h4 className="font-bold text-primary mb-2">س: كيف أتابع قضيتي؟</h4>
+                  <p className="text-muted text-sm leading-relaxed">ج: يمكنك متابعة جميع قضاياك من قسم "قضاياي" في القائمة الرئيسية.</p>
                 </div>
                 <div>
-                  <h4 className="font-bold text-[#1A3A5C] dark:text-[#C9A84C] mb-2">س: كيف أدفع؟</h4>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">ج: الدفع يتم عبر المنصة فقط بشكل آمن باستخدام البطاقات الائتمانية أو المحافظ الإلكترونية.</p>
+                  <h4 className="font-bold text-primary mb-2">س: كيف أدفع؟</h4>
+                  <p className="text-muted text-sm leading-relaxed">ج: الدفع يتم عبر المنصة فقط بشكل آمن باستخدام البطاقات الائتمانية أو المحافظ الإلكترونية.</p>
                 </div>
               </div>
-              <div className="p-4 border-t border-[#E8E0D0] dark:border-white/10 bg-gray-50 dark:bg-black/20">
-                <button onClick={() => setShowHelpModal(false)} className="w-full bg-[#1A3A5C] hover:bg-[#0F2540] text-white font-bold py-3 rounded-xl transition-colors">
+              <div className="p-4 border-t border-border bg-background">
+                <button onClick={() => setShowHelpModal(false)} className="w-full bg-primary hover:bg-opacity-90 text-surface font-bold py-3 rounded-xl transition-colors">
                   حسناً
                 </button>
               </div>
@@ -582,10 +578,10 @@ export default function SettingsScreen() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className={`fixed bottom-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg flex items-center gap-2 z-50 ${toast.type === 'success' ? 'bg-[#2D6A4F] text-white' : 'bg-[#B03A2E] text-white'}`}
+            className={`fixed bottom-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg flex items-center gap-2 z-50 ${toast.type === 'success' ? 'bg-success text-white' : 'bg-emergency text-white'}`}
           >
             {toast.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
-            <span className="font-bold text-sm">{toast.message}</span>
+            <span className="font-bold text-sm tracking-wide">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>

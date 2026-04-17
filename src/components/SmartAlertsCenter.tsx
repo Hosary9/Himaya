@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Bell, MessageSquare, FileText, Scale, Clock, ChevronRight } from "lucide-react";
+import { X, Bell, MessageSquare, FileText, Scale, Clock, ChevronRight, CheckCircle2 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useLanguage } from "../lib/i18n";
 import { useNavigate } from "react-router-dom";
@@ -37,45 +37,51 @@ export default function SmartAlertsCenter({ isOpen, onClose, onAlertClick }: { i
   const unreadCount = alerts.filter(a => !a.read).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-surface w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 duration-300">
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="font-bold text-lg">{language === 'ar' ? 'مركز التنبيهات' : 'Alerts Center'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={20} /></button>
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+      <div className="glass w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500 border border-border/50">
+        <div className="p-5 border-b border-border/30 flex items-center justify-between">
+          <h2 className="font-black text-xl text-text tracking-tight flex items-center gap-2">
+            <Bell size={20} className="text-primary" />
+            {language === 'ar' ? 'مركز التنبيهات الذكي' : 'Smart Alerts Center'}
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-all text-muted hover:text-emergency"><X size={20} /></button>
         </div>
         
-        <div className="max-h-[60vh] overflow-y-auto p-4 space-y-3">
+        <div className="max-h-[60vh] overflow-y-auto p-5 space-y-4">
           {unreadCount === 0 ? (
-            <div className="text-center py-8 text-muted animate-in fade-in">
-              {language === 'ar' ? 'لا توجد تنبيهات حالياً' : 'No alerts currently'}
+            <div className="text-center py-12 text-muted animate-in fade-in flex flex-col items-center gap-3">
+              <CheckCircle2 size={40} className="text-success/50" />
+              <p className="font-medium">{language === 'ar' ? 'كل شيء منجز! لا توجد تنبيهات جديدة' : 'All clear! No new alerts'}</p>
             </div>
           ) : (
             alerts.filter(a => !a.read).map(alert => (
               <div 
                 key={alert.id} 
                 onClick={() => handleNotification(alert)}
-                className="bg-gray-50 p-4 rounded-2xl flex gap-3 items-start hover:bg-gray-100 transition-all cursor-pointer active:scale-[0.98]"
+                className="bg-surface/50 p-5 rounded-3xl flex gap-4 items-start hover:bg-surface border border-border/50 transition-all cursor-pointer active:scale-[0.98] group shadow-inner"
               >
-                <div className="p-2 bg-primary/10 text-primary rounded-xl">
-                  {alert.type === 'reply' ? <MessageSquare size={20} /> : <Clock size={20} />}
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 group-hover:bg-primary group-hover:text-surface transition-all duration-300 shadow-sm">
+                  {alert.type === 'reply' ? <MessageSquare size={22} /> : <Clock size={22} />}
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-bold text-sm">{alert.title}</h4>
-                  <p className="text-xs text-muted mt-0.5">{alert.desc}</p>
-                  <span className="text-[10px] text-primary mt-2 block">{alert.time}</span>
+                  <h4 className="font-bold text-sm text-text group-hover:text-primary transition-colors tracking-tight">{alert.title}</h4>
+                  <p className="text-xs text-muted mt-1 font-medium opacity-80 leading-relaxed">{alert.desc}</p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <span className="text-[10px] text-primary/80 font-black uppercase tracking-widest">{alert.time}</span>
+                  </div>
                 </div>
-                <ChevronRight size={16} className="text-muted" />
+                <ChevronRight size={18} className="text-muted group-hover:text-primary transition-all group-hover:translate-x-1" />
               </div>
             ))
           )}
         </div>
         
-        <div className="p-4 border-t">
+        <div className="p-5 border-t border-border/30 bg-background/30">
           <button 
             onClick={() => { onClose(); navigate('/services'); }}
-            className="w-full bg-primary text-surface font-bold py-3 rounded-xl hover:bg-primary/90 transition-all active:scale-[0.98]"
+            className="w-full bg-primary text-surface font-black py-4 rounded-2xl hover:bg-primary/90 transition-all active:scale-[0.98] shadow-lg shadow-primary/20 tracking-wide"
           >
-            {language === 'ar' ? 'استعرض خدمات قانونية' : 'Browse Legal Services'}
+            {language === 'ar' ? 'استكشف الخدمات القانونية' : 'Explore Legal Services'}
           </button>
         </div>
       </div>

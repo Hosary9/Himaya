@@ -263,7 +263,7 @@ export default function RegisterScreen() {
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
-            className="absolute inset-0 bg-white z-50 flex flex-col items-center justify-center" 
+            className="absolute inset-0 bg-background z-50 flex flex-col items-center justify-center" 
           >
             <motion.div
               initial={{ scale: 0, y: 50 }}
@@ -271,10 +271,10 @@ export default function RegisterScreen() {
               transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
               className="text-center"
             >
-              <div className="w-24 h-24 bg-[#2D6A4F] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                <CheckCircle2 size={50} color="white" />
+              <div className="w-24 h-24 bg-success rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                <CheckCircle2 size={50} className="text-surface" />
               </div>
-              <h2 className="text-3xl font-bold text-[#1C2B3A]">مرحباً بك في محامينا! 🎉</h2>
+              <h2 className="text-3xl font-bold text-text">مرحباً بك في محامينا! 🎉</h2>
             </motion.div>
           </motion.div>
         )}
@@ -318,7 +318,7 @@ export default function RegisterScreen() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-white/95 backdrop-blur-xl p-6 rounded-[24px] shadow-[0_8px_32px_rgba(26,58,92,0.2)] border border-white/20 flex flex-col max-h-[70vh]">
+        <div className="bg-surface/95 backdrop-blur-xl p-6 rounded-[24px] shadow-[0_8px_32px_rgba(26,58,92,0.2)] border border-border/20 flex flex-col max-h-[70vh]">
           
           <AnimatePresence mode="wait">
             {errors.form && (
@@ -326,7 +326,7 @@ export default function RegisterScreen() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="bg-[#B03A2E]/15 border border-[#B03A2E] text-[#B03A2E] p-3 rounded-xl flex items-center gap-2 text-sm font-bold mb-4 shrink-0"
+                className="bg-emergency/15 border border-emergency text-emergency p-3 rounded-xl flex items-center gap-2 text-sm font-bold mb-4 shrink-0"
               >
                 <span>⚠️</span>
                 <span>{errors.form}</span>
@@ -376,7 +376,7 @@ export default function RegisterScreen() {
                 >
                   {!googleData?.googleUser && (
                     <div className="flex items-center mb-1">
-                      <button onClick={() => setStep(1)} className="text-[#6B7C8D] hover:text-[#1A3A5C] flex items-center text-sm font-bold">
+                      <button onClick={() => setStep(1)} className="text-muted hover:text-primary flex items-center text-sm font-bold">
                         <ChevronRight size={18} /> رجوع
                       </button>
                     </div>
@@ -384,8 +384,8 @@ export default function RegisterScreen() {
 
                   {googleData?.googleUser && (
                     <div className="text-center mb-2">
-                      <h2 className="text-lg font-bold text-[#1A3A5C]">أهلاً بك، {googleData.name?.split(' ')[0] || 'ضيفنا'} 👋</h2>
-                      <p className="text-sm text-[#6B7C8D]">أكمل إعداد حسابك لاختيار دورك في المنصة</p>
+                      <h2 className="text-lg font-bold text-text">أهلاً بك، {googleData.name?.split(' ')[0] || 'ضيفنا'} 👋</h2>
+                      <p className="text-sm text-muted">أكمل إعداد حسابك لاختيار دورك في المنصة</p>
                     </div>
                   )}
 
@@ -398,7 +398,7 @@ export default function RegisterScreen() {
                           focused={focusedField === 'password'} onFocus={() => setFocusedField('password')} onBlur={() => setFocusedField(null)}
                         />
                         <div className="mt-2 flex items-center gap-2 px-1">
-                          <div className="flex-1 h-1.5 bg-[#E8E0D0] rounded-full overflow-hidden">
+                          <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
                             <motion.div 
                               animate={{ width: strength.width, backgroundColor: strength.color }}
                               transition={{ duration: 0.3 }}
@@ -421,7 +421,7 @@ export default function RegisterScreen() {
                     initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
                     className="mt-1"
                   >
-                    <p className="text-sm font-bold text-[#1C2B3A] mb-2">نوع الحساب:</p>
+                    <p className="text-sm font-bold text-text mb-2">نوع الحساب:</p>
                     <div className="grid grid-cols-2 gap-3">
                       <RoleCard 
                         icon={<UserCircle size={22} />} title="عميل" selected={role === 'client'} 
@@ -432,7 +432,7 @@ export default function RegisterScreen() {
                         onClick={() => { setRole('lawyer'); setErrors(prev => ({...prev, role: ''})); }} 
                       />
                     </div>
-                    {errors.role && <p className="text-[#B03A2E] text-xs font-bold mt-2">{errors.role}</p>}
+                    {errors.role && <p className="text-emergency text-xs font-bold mt-2">{errors.role}</p>}
                   </motion.div>
 
                   {/* TERMS CHECKBOX ROW */}
@@ -451,14 +451,14 @@ export default function RegisterScreen() {
                         }
                         setTermsAccepted(e.target.checked);
                       }}
-                      className="w-4 h-4 accent-[#1A3A5C] cursor-pointer"
+                      className="w-4 h-4 accent-primary cursor-pointer"
                     />
-                    <label htmlFor="terms" className="text-sm text-[#1C2B3A]">
+                    <label htmlFor="terms" className="text-sm text-text">
                       أوافق على
                       <button
                         type="button"
                         onClick={openTerms}
-                        className="text-[#C9A84C] underline font-bold mr-1"
+                        className="text-secondary underline font-bold mr-1"
                       >
                         قواعد المنصة وشروط الاستخدام
                       </button>
@@ -475,7 +475,7 @@ export default function RegisterScreen() {
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
                   onClick={handleNext}
-                  className="w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-[#1A3A5C] hover:bg-[#0F2540]"
+                  className="w-full text-surface font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 bg-primary hover:bg-primary/90"
                 >
                   التالي
                   <ChevronRight size={20} className="rotate-180" />
@@ -485,7 +485,7 @@ export default function RegisterScreen() {
                   whileTap={{ scale: 0.98 }}
                   onClick={handleGoogleRegister}
                   disabled={loading || isSuccess}
-                  className="w-full bg-white border-2 border-[#E8E0D0] text-[#1C2B3A] font-bold h-14 rounded-[14px] shadow-sm transition-all flex items-center justify-center gap-3 hover:bg-gray-50 opacity-90 disabled:opacity-80"
+                  className="w-full bg-surface border-2 border-border text-text font-bold h-14 rounded-[14px] shadow-sm transition-all flex items-center justify-center gap-3 hover:bg-background opacity-90 disabled:opacity-80"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -501,10 +501,10 @@ export default function RegisterScreen() {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleRegister}
                 disabled={loading || !termsAccepted}
-                className={`w-full text-white font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-80 opacity-90 ${termsAccepted ? 'bg-[#1A3A5C] hover:bg-[#0F2540]' : 'bg-gray-400 cursor-not-allowed'}`}
+                className={`w-full font-bold h-14 rounded-[14px] shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-80 opacity-90 ${termsAccepted ? 'bg-primary hover:bg-primary/90 text-surface' : 'bg-muted cursor-not-allowed text-surface'}`}
               >
                 {loading ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-surface border-t-transparent rounded-full animate-spin" />
                 ) : (
                   "إنشاء الحساب 🎉"
                 )}
@@ -517,16 +517,16 @@ export default function RegisterScreen() {
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
           className="mt-6 text-center shrink-0 space-y-3"
         >
-          <p className="text-sm text-white/80">
+          <p className="text-sm text-surface/80">
             لديك حساب بالفعل؟{' '}
-            <button onClick={() => navigate('/login')} className="font-bold text-[#C9A84C] hover:text-white transition-colors">
+            <button onClick={() => navigate('/login')} className="font-bold text-secondary hover:text-surface transition-colors">
               سجل الدخول
             </button>
           </p>
 
           <button
             onClick={handleGuestMode}
-            className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold h-12 rounded-[14px] transition-all flex items-center justify-center gap-2 hover:bg-white/20 opacity-90"
+            className="w-full bg-surface/10 backdrop-blur-md border border-surface/20 text-surface font-bold h-12 rounded-[14px] transition-all flex items-center justify-center gap-2 hover:bg-surface/20 opacity-90"
           >
             <UserCircle size={18} />
             دخول كضيف
@@ -549,28 +549,28 @@ export default function RegisterScreen() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="bg-white w-full max-w-md rounded-t-[24px] p-6 flex flex-col"
+              className="bg-surface w-full max-w-md rounded-t-[24px] p-6 flex flex-col border-t border-border"
               style={{ maxHeight: '80vh' }}
               dir="rtl"
             >
               {/* Modal Header */}
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-bold text-[#1A3A5C]">
+              <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
+                <h2 className="text-lg font-bold text-text">
                   قواعد المنصة ⚖️
                 </h2>
                 <button
                   onClick={() => setShowTermsModal(false)}
-                  className="text-[#6B7C8D] text-xl font-bold w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
+                  className="text-muted text-xl font-bold w-8 h-8 flex items-center justify-center hover:bg-background rounded-full transition-colors hover:text-text"
                 >✕</button>
               </div>
 
               {/* Rules Text */}
-              <div className="overflow-y-auto flex-1 text-sm text-[#1C2B3A] leading-relaxed mb-4 custom-scrollbar pr-2">
-                <p className="text-center font-bold text-[#C9A84C] mb-3 text-base">
+              <div className="overflow-y-auto flex-1 text-sm text-text leading-relaxed mb-4 custom-scrollbar pr-2">
+                <p className="text-center font-bold text-secondary mb-3 text-base">
                   ﴿ لَا تَأْكُلُوا أَمْوَالَكُم بَيْنَكُم بِالْبَاطِلِ
                   إِلَّا أَن تَكُونَ تِجَارَةً عَن تَرَاضٍ مِّنكُمْ ﴾
                 </p>
-                <p className="text-xs text-center text-[#6B7C8D] mb-4">
+                <p className="text-xs text-center text-muted mb-4">
                   سورة النساء: ٢٩
                 </p>
                 <p className="mb-2">• الدفع المسبق شرط لبدء أي خدمة</p>
@@ -585,7 +585,7 @@ export default function RegisterScreen() {
 
               {/* Timer */}
               {!timerDone && (
-                <div className="text-center py-3 font-bold text-[#6B7C8D]">
+                <div className="text-center py-3 font-bold text-muted">
                   ⏳ هتقدر توافق بعد {timer} ثواني
                 </div>
               )}
@@ -594,7 +594,7 @@ export default function RegisterScreen() {
               {timerDone && (
                 <button
                   onClick={acceptTerms}
-                  className="w-full font-bold py-3 rounded-xl text-white transition-all bg-[#1A3A5C] hover:bg-[#0F2540]"
+                  className="w-full font-bold py-4 rounded-xl text-surface transition-all bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                 >
                   قرأت وموافق ✅
                 </button>
@@ -616,7 +616,7 @@ function InputField({ icon, placeholder, value, onChange, error, shakeKey, delay
       key={`${placeholder}-${shakeKey}`}
     >
       <div className="relative">
-        <div className="absolute top-1/2 -translate-y-1/2 right-4 text-[#6B7C8D]">
+        <div className="absolute top-1/2 -translate-y-1/2 right-4 text-muted">
           {icon}
         </div>
         <motion.input 
@@ -627,13 +627,13 @@ function InputField({ icon, placeholder, value, onChange, error, shakeKey, delay
           onBlur={onBlur}
           placeholder={placeholder}
           animate={{ 
-            borderColor: error ? '#B03A2E' : focused ? '#C9A84C' : '#E8E0D0',
+            borderColor: error ? 'var(--color-emergency)' : focused ? 'var(--color-secondary)' : 'var(--color-border)',
             boxShadow: focused && !error ? '0 0 0 2px rgba(201,168,76,0.2)' : error ? '0 0 0 2px rgba(176,58,46,0.2)' : 'none'
           }}
-          className="w-full bg-transparent border-2 rounded-xl py-4 pr-12 pl-4 outline-none text-right text-[#1C2B3A] transition-colors"
+          className="w-full bg-transparent border border-border rounded-xl py-4 pr-12 pl-4 outline-none text-right text-text transition-colors"
         />
       </div>
-      {error && <p className="text-[#B03A2E] text-xs font-bold mt-1 px-1">{error}</p>}
+      {error && <p className="text-emergency text-xs font-bold mt-1 px-1">{error}</p>}
     </motion.div>
   );
 }
@@ -645,16 +645,16 @@ function RoleCard({ icon, title, selected, onClick }: any) {
       onClick={onClick}
       animate={{
         scale: selected ? 1.05 : 1,
-        backgroundColor: selected ? '#1A3A5C' : '#FFFFFF',
-        borderColor: selected ? '#C9A84C' : '#E8E0D0',
-        color: selected ? '#FFFFFF' : '#1C2B3A'
+        backgroundColor: selected ? 'var(--color-primary)' : 'var(--color-surface)',
+        borderColor: selected ? 'var(--color-secondary)' : 'var(--color-border)',
+        color: selected ? 'var(--color-surface)' : 'var(--color-text)'
       }}
-      className="flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-colors relative overflow-hidden"
+      className="flex flex-col items-center justify-center p-4 rounded-xl border border-border transition-colors relative overflow-hidden"
     >
       {selected && (
         <motion.div 
           initial={{ scale: 0 }} animate={{ scale: 1 }} 
-          className="absolute top-2 right-2 text-[#C9A84C]"
+          className="absolute top-2 right-2 text-secondary"
         >
           <CheckCircle2 size={16} />
         </motion.div>

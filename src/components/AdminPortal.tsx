@@ -1,9 +1,79 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Activity, Users, Settings, Database, Server, ShieldAlert, Terminal, FileCode2, Search, CheckCircle, XCircle, AlertCircle, Save } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { db } from '../firebase';
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState('health');
+  const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'verification') {
+      fetchPendingVerifications();
+    }
+  }, [activeTab]);
+
+  const fetchPendingVerifications = async () => {
+    try {
+      const q = query(collection(db, 'users'), where('role', '==', 'lawyer'), where('verificationStatus', '==', 'pending'));
+      const snapshot = await getDocs(q);
+      const items: any[] = [];
+      snapshot.forEach(doc => {
+        items.push({ id: doc.id, ...doc.data() });
+      });
+      setPendingVerifications(items);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleVerificationAction = async (userId: string, action: 'verified' | 'rejected') => {
+    setIsVerifying(true);
+    try {
+      const updateData: any = { verificationStatus: action };
+      if (action === 'rejected') {
+         updateData.rejectionReason = 'المستندات المرفقة غير واضحة العنونة أو ناقصة. يرجى إعادة رفع كل المستندات.';
+      }
+      await updateDoc(doc(db, 'users', userId), updateData);
+      
+      // If verified, add/update them in the 'lawyers' collection for search
+      if (action === 'verified') {
+        const userDoc = pendingVerifications.find(u => u.id === userId);
+        if (userDoc) {
+          const { setDoc } = await import('firebase/firestore');
+          await setDoc(doc(db, 'lawyers', userId), {
+            uid: userId,
+            name: userDoc.name || userDoc.email || 'محامي',
+            nameEn: userDoc.name || userDoc.email || 'Lawyer',
+            specialty: userDoc.specialization || 'general',
+            specialtyLabel: userDoc.specialization || 'عام',
+            specialtyLabelEn: 'General',
+            location: userDoc.governorate || 'غير محدد',
+            locationEn: 'Not specified',
+            governorate: userDoc.governorate || 'all',
+            rating: 5.0,
+            reviews: 0,
+            experience: userDoc.experience || 'سنة',
+            experienceEn: '1 year',
+            availability: 'now',
+            matchScore: 90,
+            consultationPrice: 100,
+            casePriceRange: '',
+            image: `https://ui-avatars.com/api/?name=${encodeURIComponent(userDoc.name || 'Lawyer')}&background=random&color=fff`,
+            isExpatSpecialist: false,
+            verificationStatus: 'verified'
+          }, { merge: true });
+        }
+      }
+
+      setPendingVerifications(prev => prev.filter(u => u.id !== userId));
+    } catch (e) {
+      console.error(e);
+    }
+    setIsVerifying(false);
+  };
 
   const escrowData = [
     { id: 'ESC-8821', client: 'Ahmed M.', lawyer: 'Mahmoud S.', amount: 'EGP 5,000', status: 'locked', date: '2026-04-01' },
@@ -49,6 +119,9 @@ export default function AdminPortal() {
           <button onClick={() => setActiveTab('health')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors", activeTab === 'health' ? "bg-emerald-500/10 text-emerald-500" : "hover:bg-gray-800")}>
             <Activity size={18} /> System Health
           </button>
+          <button onClick={() => setActiveTab('verification')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors", activeTab === 'verification' ? "bg-emerald-500/10 text-emerald-500" : "hover:bg-gray-800")}>
+            <ShieldAlert size={18} /> Verifications
+          </button>
           <button onClick={() => setActiveTab('escrow')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors", activeTab === 'escrow' ? "bg-emerald-500/10 text-emerald-500" : "hover:bg-gray-800")}>
             <Database size={18} /> Escrow Control
           </button>
@@ -57,9 +130,6 @@ export default function AdminPortal() {
           </button>
           <button onClick={() => setActiveTab('ai')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors", activeTab === 'ai' ? "bg-emerald-500/10 text-emerald-500" : "hover:bg-gray-800")}>
             <Settings size={18} /> AI Weights Config
-          </button>
-          <button onClick={() => setActiveTab('contracts')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors", activeTab === 'contracts' ? "bg-emerald-500/10 text-emerald-500" : "hover:bg-gray-800")}>
-            <FileCode2 size={18} /> Dynamic Contracts
           </button>
         </nav>
         <div className="p-4 border-t border-gray-800 text-xs text-gray-600">
@@ -106,6 +176,52 @@ export default function AdminPortal() {
               <div className="mb-2"><span className="text-emerald-500">[INFO]</span> 2026-04-02 14:40:01 - Contract drafted successfully (ID: C-992)</div>
               <div className="mb-2"><span className="text-red-500">[ERROR]</span> 2026-04-02 14:45:33 - Failed to fetch case precedents (Timeout)</div>
               <div className="mb-2"><span className="text-emerald-500">[INFO]</span> 2026-04-02 14:50:00 - System check completed. All services operational.</div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'verification' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Lawyer Verifications</h2>
+              <span className="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-xs font-bold">{pendingVerifications.length} pending</span>
+            </div>
+            <div className="bg-[#1A1A1A] rounded-xl border border-gray-800 p-6 flex flex-col gap-4">
+              {pendingVerifications.length === 0 ? (
+                <div className="text-gray-500 text-center py-8">
+                  No pending verifications at the moment.
+                </div>
+              ) : (
+                pendingVerifications.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between p-4 bg-[#222] rounded-lg border border-gray-700">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-gray-400">
+                        <Users size={24} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white">{user.name || user.email || 'Unknown Lawyer'}</h3>
+                        <p className="text-xs text-gray-500">Submitted: {user.documentsSubmittedAt ? new Date(user.documentsSubmittedAt).toLocaleDateString() : 'N/A'} (Pending)</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleVerificationAction(user.id, 'verified')}
+                        disabled={isVerifying}
+                        className="px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-lg text-sm font-bold hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        onClick={() => handleVerificationAction(user.id, 'rejected')}
+                        disabled={isVerifying}
+                        className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm font-bold hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -230,68 +346,6 @@ export default function AdminPortal() {
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'contracts' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Dynamic Contract Builder</h2>
-              <button className="bg-emerald-500 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-emerald-400 transition-colors">
-                <Save size={16} /> Save Template
-              </button>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-[#1A1A1A] rounded-xl border border-gray-800 flex flex-col h-[600px]">
-                <div className="p-4 border-b border-gray-800 flex items-center justify-between bg-[#222] rounded-t-xl">
-                  <span className="text-sm font-medium text-gray-300">Template JSON</span>
-                  <span className="text-xs text-emerald-500">Valid JSON</span>
-                </div>
-                <textarea 
-                  value={contractTemplate}
-                  onChange={(e) => setContractTemplate(e.target.value)}
-                  className="flex-1 bg-transparent p-4 text-sm font-mono text-emerald-400 focus:outline-none resize-none"
-                  spellCheck="false"
-                />
-              </div>
-              <div className="bg-[#1A1A1A] rounded-xl border border-gray-800 flex flex-col h-[600px]">
-                <div className="p-4 border-b border-gray-800 bg-[#222] rounded-t-xl">
-                  <span className="text-sm font-medium text-gray-300">Preview</span>
-                </div>
-                <div className="p-6 overflow-y-auto bg-white text-black m-4 rounded">
-                  {(() => {
-                    try {
-                      const parsed = JSON.parse(contractTemplate);
-                      return (
-                        <div className="space-y-6" dir="rtl">
-                          <h3 className="text-xl font-bold text-center underline mb-8">{parsed.title}</h3>
-                          <div className="space-y-4">
-                            {parsed.fields?.map((field: any, idx: number) => (
-                              <div key={idx} className="flex flex-col gap-1">
-                                <label className="text-sm font-bold text-gray-700">{field.label}</label>
-                                <div className="border-b border-dashed border-gray-400 pb-1 text-gray-500 text-sm">
-                                  [{field.type.toUpperCase()}]
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mt-8 space-y-4">
-                            <h4 className="font-bold">البنود:</h4>
-                            <ol className="list-decimal list-inside space-y-2 text-sm leading-relaxed">
-                              {parsed.clauses?.map((clause: string, idx: number) => (
-                                <li key={idx}>{clause}</li>
-                              ))}
-                            </ol>
-                          </div>
-                        </div>
-                      );
-                    } catch (e) {
-                      return <div className="text-red-500 text-sm font-mono">Invalid JSON format</div>;
-                    }
-                  })()}
-                </div>
-              </div>
             </div>
           </div>
         )}

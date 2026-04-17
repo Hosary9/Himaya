@@ -2,32 +2,63 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-  --color-primary: #1A3A5C;
-  --color-gold: #C9A84C;
-  --color-background: #F8F5EF;
-  --color-surface: #FFFFFF;
-  --color-success: #2D6A4F;
-  --color-text: #1C2B3A;
-  --color-muted: #6B7C8D;
-  --color-border: #E8E0D0;
-  --color-emergency: #B03A2E;
-  --color-dark: #0F2540;
+@layer base {
+  :root {
+    --bg-color: #F8F5EF;
+    --surface-color: #FFFFFF;
+    --text-color: #1C2B3A;
+    --muted-color: #6B7C8D;
+    --border-color: #E8E0D0;
+    --primary-color: #1A3A5C;
+    --secondary-color: #C9A84C;
+    --success-color: #2D6A4F;
+    --warning-color: #F39C12;
+    --error-color: #B03A2E;
+  }
 
-  --color-accent: var(--color-gold);
-  --color-secondary: var(--color-gold);
+  .dark {
+    /* Matched to User Request */
+    --bg-color: #0B1220;
+    --surface-color: #16233A;
+    --text-color: #EAF0FF;
+    --muted-color: #74839A;
+    --secondary-text: #A8B3C7;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --primary-color: #5B8CFF;
+    --secondary-color: #D6B25E;
+    --success-color: #2FD68B;
+    --warning-color: #F4B35E;
+    --error-color: #E76F6F;
+  }
+
+  body {
+    @apply bg-background text-text font-sans antialiased transition-colors duration-300;
+  }
+}
+
+@theme {
+  --color-primary: var(--primary-color);
+  --color-gold: var(--secondary-color);
+  --color-secondary: var(--secondary-color);
+  --color-background: var(--bg-color);
+  --color-surface: var(--surface-color);
+  --color-success: var(--success-color);
+  --color-warning: var(--warning-color);
+  --color-emergency: var(--error-color);
+  --color-text: var(--text-color);
+  --color-muted: var(--muted-color);
+  --color-border: var(--border-color);
+  --color-secondary-text: var(--secondary-text);
+  
   --font-sans: "Cairo", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-arabic: "Cairo", ui-sans-serif, system-ui, sans-serif;
   --font-english: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
-@layer base {
-  body {
-    @apply bg-background text-text font-sans antialiased;
-  }
-}
-
 @layer utilities {
+  .glass {
+    @apply bg-surface/60 backdrop-blur-md border border-border;
+  }
   .scrollbar-hide {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
@@ -35,5 +66,67 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-}
 
+  /* Sophisticated Dark Mode Refinements */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) {
+    background-color: var(--bg-color);
+    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  div#root:nth-of-type(1) > div:nth-of-type(1) > aside:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1) {
+    @apply transition-all duration-300;
+  }
+
+  div#root:nth-of-type(1) > div:nth-of-type(1) > aside:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1) > span:nth-of-type(1) {
+    @apply font-medium tracking-wide;
+  }
+
+  /* Chat Bubble Refinements for Assistant */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(5) > div:nth-of-type(2),
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(2) {
+    @apply shadow-lg border-white/[0.05] backdrop-blur-xl transition-all duration-500;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  }
+
+  /* Main Container Refinement */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) {
+    @apply transition-all duration-700 ease-out;
+    perspective: 1000px;
+    animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Header Container Styling */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
+    @apply border-b border-border/10 pb-6 mb-6;
+  }
+
+  /* Checklist/Footer Area Refinement */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) {
+    @apply backdrop-blur-md bg-background/20 rounded-[28px] p-6 border border-white/[0.03] transition-all duration-500 shadow-2xl;
+  }
+
+  /* Gear Icon Button Sophistication */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2) {
+    @apply transition-all duration-500 hover:rotate-90 hover:shadow-lg hover:border-primary/40 active:scale-95;
+  }
+
+  /* Verification Main Container Styling */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) {
+    @apply max-w-4xl mx-auto shadow-2xl;
+  }
+
+  /* Terms Content Container Styling */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) {
+    @apply bg-background/40 backdrop-blur-sm border-x border-border/10;
+  }
+
+  /* Inner Content Wrapper Styling */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
+    @apply transition-all duration-500 p-8 md:p-12;
+  }
+}

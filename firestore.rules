@@ -79,7 +79,8 @@ service cloud.firestore {
 
     match /lawyers/{lawyerId} {
       allow read: if true; // Publicly readable for search
-      allow write: if isAdmin();
+      allow create: if isOwner(lawyerId) || isAdmin();
+      allow update: if isOwner(lawyerId) || isAdmin();
     }
 
     match /consultations/{consultationId} {
