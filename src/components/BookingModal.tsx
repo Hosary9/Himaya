@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Phone, Video, Building, FileText, Calendar, Clock, CreditCard, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Phone, Video, Building, FileText, Calendar, Clock, CreditCard, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../lib/i18n';
 import { db, auth } from '../firebase';
+import { cn } from '../lib/utils';
 import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { format, addDays, isSameDay, startOfDay } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
@@ -25,6 +26,8 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [depositAmount, setDepositAmount] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const platformFee = lawyer?.consultationPrice ? lawyer.consultationPrice * 0.15 : 0;
   const totalPrice = lawyer?.consultationPrice ? lawyer.consultationPrice + platformFee : 0;
@@ -95,9 +98,24 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
   };
 
   const handleConfirmBooking = async () => {
-    if (!auth.currentUser || !selectedDate || !selectedTime || !consultationType) return;
+    console.log("Attempting to confirm booking...", {
+      lawyerId: lawyer.id,
+      lawyerName: lawyer.name,
+      type: consultationType,
+      date: selectedDate,
+      time: selectedTime,
+      total: totalPrice
+    });
+
+    if (!auth.currentUser || !selectedDate || !selectedTime || !consultationType) {
+      setValidationError(language === 'ar' ? 'يرجى اختيار نوع الاستشارة والموعد' : 'Please select consultation type and time');
+      return;
+    }
     
     setIsProcessing(true);
+    setErrorMessage(null);
+    setValidationError(null);
+
     try {
       const walletRef = doc(db, 'wallet', auth.currentUser.uid);
       
@@ -151,26 +169,48 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
         return bookingRef.id;
       });
       
+      console.log("Booking successful! ID:", newBookingId);
       setBookingId(newBookingId);
       setStep(5);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Booking failed:", error);
-      alert(language === 'ar' ? 'فشل الحجز. يرجى المحاولة مرة أخرى.' : 'Booking failed. Please try again.');
+      const msg = language === 'ar' 
+        ? (error.message === 'Insufficient funds' ? 'رصيد المحفظة غير كافٍ. يرجى الشحن أولاً.' : 'فشل الحجز. يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.')
+        : (error.message === 'Insufficient funds' ? 'Insufficient funds in wallet.' : 'Booking failed. Please check your connection and try again.');
+      
+      setErrorMessage(msg);
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleNext = () => {
-    if (step === 1 && consultationType) setStep(2);
-    else if (step === 2 && selectedDate && selectedTime) setStep(3);
-    else if (step === 3) {
+    setValidationError(null);
+    setErrorMessage(null);
+
+    if (step === 1) {
+      if (!consultationType) {
+        setValidationError(language === 'ar' ? 'يرجى اختيار نوع الاستشارة' : 'Please select consultation type');
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+      if (!selectedDate || !selectedTime) {
+        setValidationError(language === 'ar' ? 'يرجى اختيار الموعد (تاريخ ووقت)' : 'Please select date and time');
+        return;
+      }
+      setStep(3);
+    } else if (step === 3) {
       if (walletBalance < totalPrice) {
         setStep(4);
       } else {
         handleConfirmBooking();
       }
-    } else if (step === 4 && walletBalance >= totalPrice) {
+    } else if (step === 4) {
+      if (walletBalance < totalPrice) {
+        setValidationError(language === 'ar' ? 'رصيدك غير كافٍ لإتمام الحجز' : 'Insufficient balance');
+        return;
+      }
       handleConfirmBooking();
     }
   };
@@ -408,30 +448,54 @@ export function BookingModal({ isOpen, onClose, lawyer }: BookingModalProps) {
 
         {/* Footer */}
         {step < 5 && (
-          <div className="p-4 border-t border-border flex gap-3">
-            {step > 1 && step < 4 && (
-              <button 
-                onClick={() => setStep((s) => s - 1 as Step)}
-                className="px-6 py-3 rounded-xl font-bold text-text bg-surface border border-border hover:bg-background transition-colors"
-              >
-                {language === 'ar' ? 'رجوع' : 'Back'}
-              </button>
+          <div className="p-4 border-t border-border flex flex-col gap-3">
+            {(validationError || errorMessage) && (
+              <div className={cn(
+                "p-3 rounded-xl flex items-center gap-2 text-xs font-bold animate-in slide-in-from-bottom-2",
+                validationError ? "bg-warning/10 text-warning border border-warning/20" : "bg-emergency/10 text-emergency border border-emergency/20"
+              )}>
+                <AlertCircle size={16} />
+                <span>{validationError || errorMessage}</span>
+              </div>
             )}
-            <button 
-              onClick={handleNext}
-              disabled={
-                isProcessing ||
-                (step === 1 && !consultationType) || 
-                (step === 2 && (!selectedDate || !selectedTime)) ||
-                (step === 4 && walletBalance < totalPrice)
-              }
-              className="flex-1 py-3 bg-primary text-surface rounded-xl font-bold disabled:opacity-50 hover:bg-primary/90 transition-colors"
-            >
-              {isProcessing ? '...' : 
-               step === 3 ? (language === 'ar' ? 'تأكيد الحجز' : 'Confirm Booking') : 
-               step === 4 ? (language === 'ar' ? 'تأكيد الحجز' : 'Confirm Booking') :
-               (language === 'ar' ? 'التالي' : 'Next')}
-            </button>
+
+            <div className="flex gap-3">
+              {step > 1 && step < 4 && (
+                <button 
+                  onClick={() => {
+                    setValidationError(null);
+                    setErrorMessage(null);
+                    setStep((s) => s - 1 as Step);
+                  }}
+                  className="px-6 py-3 rounded-xl font-bold text-text bg-surface border border-border hover:bg-background transition-colors"
+                >
+                  {language === 'ar' ? 'رجوع' : 'Back'}
+                </button>
+              )}
+              <button 
+                onClick={handleNext}
+                id="confirm-booking-btn"
+                disabled={isProcessing}
+                className={cn(
+                  "flex-1 py-4 bg-primary text-surface rounded-xl font-bold transition-all shadow-lg active:scale-95 block", // Requirement 2: display block
+                  (
+                    (step === 1 && !consultationType) || 
+                    (step === 2 && (!selectedDate || !selectedTime)) ||
+                    (step === 4 && walletBalance < totalPrice)
+                  ) ? "opacity-30 cursor-not-allowed grayscale-[0.5]" : "hover:bg-primary/90 shadow-primary/20",
+                  "relative overflow-hidden"
+                )}
+              >
+                {isProcessing ? (
+                  <RefreshCw className="w-5 h-5 animate-spin mx-auto text-surface/50" />
+                ) : (
+                  <>
+                    {(step === 3 || step === 4) ? (language === 'ar' ? 'تأكيد حجز الاستشارة' : 'Confirm Consultation Booking') : 
+                     (language === 'ar' ? 'التالي' : 'Next')}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
         {step === 5 && (
